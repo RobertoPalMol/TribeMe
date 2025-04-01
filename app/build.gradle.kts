@@ -61,6 +61,10 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     //rescale image
     implementation(libs.android.image.cropper)
+    // Retrofit implementations
+    implementation(libs.retrofit.v290)
+    implementation(libs.converter.gson.v264)
+    implementation(libs.logging.interceptor)
 
 
 }

@@ -23,6 +23,7 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -166,14 +167,17 @@ fun UserMailName(mailname: MutableState<String>) {
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     textStyle = TextStyle(BlackPost),
-                    colors = TextFieldDefaults.textFieldColors(
+                    colors = TextFieldDefaults.colors(
                         cursorColor = BlackPost,
                         disabledLabelColor = BlackPost,
-                        focusedIndicatorColor = Color.Transparent, //hide the indicator
-                        unfocusedIndicatorColor = Color.Transparent, //hide indicator when the text is used
-                        containerColor = WhitePost,
-                        focusedLabelColor = BlackPost
-                    ),
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedLabelColor = BlackPost,
+                        focusedContainerColor = WhitePost,
+                        unfocusedContainerColor = WhitePost,
+                        disabledContainerColor = WhitePost
+                    )
+                    ,
                     modifier = Modifier
                         .height(60.dp)
                         .horizontalScroll(rememberScrollState())//improve el scroll
@@ -210,14 +214,17 @@ fun UserMailDirection(mail: MutableState<String>) {
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     textStyle = TextStyle(BlackPost),
-                    colors = TextFieldDefaults.textFieldColors(
+                    colors = TextFieldDefaults.colors(
                         cursorColor = BlackPost,
                         disabledLabelColor = BlackPost,
-                        focusedIndicatorColor = Color.Transparent, //hide the indicator
-                        unfocusedIndicatorColor = Color.Transparent, //hide indicator when the text is used
-                        containerColor = WhitePost,
-                        focusedLabelColor = BlackPost
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedLabelColor = BlackPost,
+                        focusedContainerColor = WhitePost,
+                        unfocusedContainerColor = WhitePost,
+                        disabledContainerColor = WhitePost
                     )
+
                 )
             }
         }
@@ -250,14 +257,17 @@ fun UserName(name: MutableState<String>) {
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     textStyle = TextStyle(BlackPost),
-                    colors = TextFieldDefaults.textFieldColors(
+                    colors = TextFieldDefaults.colors(
                         cursorColor = BlackPost,
                         disabledLabelColor = BlackPost,
-                        focusedIndicatorColor = Color.Transparent, //hide the indicator
-                        unfocusedIndicatorColor = Color.Transparent, //hide indicator when the text is used
-                        containerColor = WhitePost,
-                        focusedLabelColor = BlackPost
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedLabelColor = BlackPost,
+                        focusedContainerColor = WhitePost,
+                        unfocusedContainerColor = WhitePost,
+                        disabledContainerColor = WhitePost
                     )
+
                 )
             }
         }

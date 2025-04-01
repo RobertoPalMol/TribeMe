@@ -2,10 +2,12 @@ package com.robpalmol.tribeme.Components
 
 import android.content.Context
 import android.net.Uri
+import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -57,6 +59,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.canhub.cropper.CropImageContract
+import com.canhub.cropper.CropImageContractOptions
+import com.canhub.cropper.CropImageOptions
+import com.canhub.cropper.CropImageView
 import com.robpalmol.tribeme.R
 import com.robpalmol.tribeme.ui.theme.BlackPost
 import com.robpalmol.tribeme.ui.theme.BluePost
@@ -87,7 +93,6 @@ val categoryNames = listOf(
     "Comida"
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventName(name: MutableState<String>) {
     val maxChar = 20
@@ -127,13 +132,15 @@ fun EventName(name: MutableState<String>) {
                     value = name.value,
                     onValueChange = { if (it.length <= maxChar) name.value = it },
                     textStyle = TextStyle(BlackPost),
-                    colors = TextFieldDefaults.textFieldColors(
+                    colors = TextFieldDefaults.colors(
                         cursorColor = BlackPost,
                         disabledLabelColor = BlackPost,
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
-                        containerColor = WhitePost,
-                        focusedLabelColor = BlackPost
+                        focusedLabelColor = BlackPost,
+                        disabledContainerColor = WhitePost,
+                        unfocusedContainerColor = WhitePost,
+                        focusedContainerColor = WhitePost
                     ),
                     placeholder = {
                         Text(
@@ -196,14 +203,16 @@ fun EventDescription(description: MutableState<String>) {
                     value = description.value,
                     onValueChange = { if (it.length <= maxChar) description.value = it },
                     textStyle = TextStyle(BlackPost),
-                    colors = TextFieldDefaults.textFieldColors(
+                    colors = TextFieldDefaults.colors(
                         cursorColor = BlackPost,
                         disabledLabelColor = BlackPost,
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
-                        containerColor = WhitePost,
-                        focusedLabelColor = BlackPost
-                    ),
+                        focusedLabelColor = BlackPost,
+                        focusedContainerColor = WhitePost,
+                        unfocusedContainerColor = WhitePost,
+                        disabledContainerColor = WhitePost
+                ),
                     placeholder = {
                         Text(
                             text = "Descripción del evento",
@@ -225,6 +234,7 @@ fun EventDescription(description: MutableState<String>) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventDate(
@@ -540,9 +550,8 @@ fun AddPhoto(imageUrl: MutableState<String>) {
     val cropImage = rememberLauncherForActivityResult(CropImageContract()) { result ->
         if (result.isSuccessful) {
             val croppedImageUri = result.uriContent
-
             croppedImageUri?.let { uri ->
-                // Solo guardamos la URI de la imagen seleccionada y recortada
+                // We only save the URI of the selected and cropped image
                 imageUrl.value = uri.toString()
                 Toast.makeText(context, "Imagen seleccionada", Toast.LENGTH_SHORT).show()
             }
@@ -555,12 +564,12 @@ fun AddPhoto(imageUrl: MutableState<String>) {
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let { selectedUri ->
-            // Llama a la actividad para recortar la imagen seleccionada
+            // Call the activity to crop the selected image
             cropImage.launch(
                 CropImageContractOptions(
                     uri = selectedUri,
                     cropImageOptions = CropImageOptions(
-                        guidelines = CropImageView.Guidelines.ON,  // Muestra las guías de recorte(se puede desactivar)
+                        guidelines = CropImageView.Guidelines.ON,  // Show cropping guides (can be disabled)
                         aspectRatioX = 1,
                         aspectRatioY = 1,
                         fixAspectRatio = true
@@ -613,14 +622,17 @@ fun AddUbication(ubication: MutableState<String>) {
                     value = ubication.value,
                     onValueChange = { ubication.value = it },
                     textStyle = TextStyle(BlackPost),
-                    colors = TextFieldDefaults.textFieldColors(
+                    colors = TextFieldDefaults.colors(
                         cursorColor = BlackPost,
                         disabledLabelColor = BlackPost,
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
-                        containerColor = WhitePost,
-                        focusedLabelColor = BlackPost
-                    ),
+                        focusedLabelColor = BlackPost,
+                        focusedContainerColor = WhitePost,
+                        unfocusedContainerColor = WhitePost,
+                        disabledContainerColor = WhitePost
+                    )
+                    ,
                     placeholder = {
                         Text(
                             text = "Ubicación",
@@ -670,7 +682,7 @@ fun AddUbication(ubication: MutableState<String>) {
                         detectTapGestures { }
                     }
             ) {
-                GoogleMap()
+                {/*TODO*/}
             }
         }
     }
@@ -684,11 +696,11 @@ fun SaveElement(
     startTime: MutableState<String>,
     endDate: MutableState<String>,
     endTime: MutableState<String>,
-    selectedCategories: MutableState<Set<String>>, // Este estado puede estar vacío
+    selectedCategories: MutableState<Set<String>>, // This variable can be empty
     ubication: MutableState<String>,
     autorName: MutableState<String>,
     autorId: MutableState<String>,
-    imageUrl: MutableState<String>, // Este estado puede estar vacío
+    imageUrl: MutableState<String>, // This variable can be empty
     dateError: MutableState<Boolean>
 ) {
     val context = LocalContext.current
@@ -708,34 +720,9 @@ fun SaveElement(
                     // Si hay imagen seleccionada, subimos la imagen a Firebase Storage
                     if (imageUrl.value.isNotEmpty()) {
                         // Subir la imagen a Firebase Storage antes de publicar el evento
-                        val storageReference = FirebaseStorage.getInstance().reference
                         val fileName = "${System.currentTimeMillis()}.jpeg"
-                        val imageRef = storageReference.child("event_images/$fileName")
 
-                        val uri = Uri.parse(imageUrl.value)
-                        imageRef.putFile(uri)
-                            .addOnSuccessListener {
-                                imageRef.downloadUrl.addOnSuccessListener { downloadUri ->
-                                    // Guardamos el evento con la URL de la imagen subida
-                                    saveEvent(
-                                        name,
-                                        description,
-                                        startDate,
-                                        startTime,
-                                        endDate,
-                                        endTime,
-                                        selectedCategories,
-                                        ubication,
-                                        autorName,
-                                        autorId,
-                                        downloadUri.toString(),
-                                        context
-                                    )
-                                }
-                            }
-                            .addOnFailureListener {
-                                Toast.makeText(context,"Error al subir la imagen", Toast.LENGTH_SHORT).show()
-                            }
+
                     } else {
                         // Si no hay imagen, guardamos el evento sin la URL de la imagen
                         saveEvent(
@@ -785,7 +772,7 @@ fun SaveElement(
     }
 }
 
-// Función para guardar el evento en Firestore
+// Función para guardar el evento
 fun saveEvent(
     name: MutableState<String>,
     description: MutableState<String>,
@@ -793,46 +780,17 @@ fun saveEvent(
     startTime: MutableState<String>,
     endDate: MutableState<String>,
     endTime: MutableState<String>,
-    selectedCategories: MutableState<Set<String>>, // Este estado puede estar vacío
+    selectedCategories: MutableState<Set<String>>, // This variable can be empty
     ubication: MutableState<String>,
     autorName: MutableState<String>,
     autorId: MutableState<String>,
-    imageUrl: String,// Este estado puede estar vacío
+    imageUrl: String,// This variable can be empty
     context: Context
 ){
-    val firestore = FirebaseFirestore.getInstance()
     Toast.makeText(context, "Publicando Evento (esta acción puede tardar unos instantes)", Toast.LENGTH_SHORT).show()
-    val eventId = firestore.collection("events").document().id
-    Log.d("SaveElement", "Nuevo ID del evento: $eventId")
 
-    val event = hashMapOf(
-        "id" to eventId,
-        "name" to name.value,
-        "description" to description.value,
-        "startDate" to startDate.value,
-        "startTime" to startTime.value,
-        "endDate" to endDate.value,
-        "endTime" to endTime.value,
-        "categories" to selectedCategories.value.toList(),
-        "ubication" to ubication.value,
-        "author" to autorName.value,
-        "authorId" to autorId.value,
-        "imageUrl" to imageUrl // La URL de la imagen, que puede estar vacía
-    )
+    Log.d("SaveElement", "Evento a guardar")
 
-    Log.d("SaveElement", "Evento a guardar: $event")
-
-    firestore.collection("events")
-        .document(eventId)
-        .set(event, SetOptions.merge())
-        .addOnSuccessListener {
-            Log.d("SaveElement", "Evento guardado con éxito")
-            Toast.makeText(context, "Evento publicado con éxito", Toast.LENGTH_SHORT).show()
-        }
-        .addOnFailureListener { exception ->
-            Log.e("SaveElement", "Error al guardar el evento: ${exception.message}")
-            Toast.makeText(context, "Error al publicar el evento", Toast.LENGTH_SHORT).show()
-        }
 }
 
 
