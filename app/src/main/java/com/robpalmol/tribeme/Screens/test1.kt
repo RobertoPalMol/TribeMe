@@ -36,9 +36,12 @@ fun MyDataScreen(viewModel: MyViewModel = viewModel()) {
     Scaffold(
         topBar = { TopAppBar(title = { Text("My Data") }) },
         content = {
-            LazyColumn {
-                items(data) { item -> // Iterar sobre la lista de usuarios
-                    MyDataItem(item, currentUserID) // Pasar el usuario y el estado
+            Column {
+                Spacer(Modifier.height(100.dp))
+                LazyColumn {
+                    items(data) { item -> // Iterar sobre la lista de usuarios
+                        MyDataItem(item, currentUserID) // Pasar el usuario y el estado
+                    }
                 }
             }
         },
@@ -59,17 +62,17 @@ fun MyDataItem(user: User, currentUserID: MutableState<Long?>) {
                 .fillMaxWidth()
                 .clickable {
                     // Actualizar el ID del usuario cuando se hace clic
-                    currentUserID.value = user.id
+                    currentUserID.value = user.usuarioId
                     Log.d("PostElement", "Selected user ID: ${currentUserID.value}")
                 },
             horizontalArrangement = Arrangement.Center
         ) {
             Column {
-                Text(text = user.name)
-                Text(text = user.mail)
-                Text(text = user.password)
-                Text(text = user.creationTime)
-                Log.d("MyDataItem", "User ID: ${user.id}")
+                Text(text = user.nombre)
+                Text(text = user.correo)
+                Text(text = user.contraseña)
+                Text(text = user.fechaCreacion)
+                Log.d("MyDataItem", "User ID: ${user.usuarioId}")
             }
         }
     }

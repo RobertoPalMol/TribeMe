@@ -13,9 +13,9 @@ data class Tribe(
 )
 
 data class User(
-    val id: Long,
-    val name: String,
-    val mail: String,
-    val password: String,
-    val creationTime: String
+    val usuarioId: Long,
+    val nombre: String,
+    val correo: String,
+    val contraseña: String,
+    val fechaCreacion: String
 )

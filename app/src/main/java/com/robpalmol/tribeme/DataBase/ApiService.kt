@@ -7,11 +7,11 @@ import retrofit2.http.Body
 import retrofit2.http.Path
 
 interface ApiService {
-    @GET("api/users") // Ruta relativa de tu API
+    @GET("api/usuarios") // Ruta relativa de tu API
     suspend fun getAllUsers(): List<User>
-    @GET("api/users/{id}")
+    @GET("api/usuarios/{id}")
     suspend fun getUserbyId(@Path("id") id: Int): User
 
-    @GET("api/users/1")
+    @GET("api/usuarios/1")
     suspend fun getData(@Body myData: User): User
 }
