@@ -1,5 +1,6 @@
-package com.robpalmol.tribeme.VIewModels
+package com.robpalmol.tribeme.ViewModels
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,9 +10,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-
-
-
 class MyViewModel : ViewModel() {
     private val _data = MutableStateFlow<List<User>>(emptyList())
     val data: StateFlow<List<User>> = _data
@@ -19,19 +17,17 @@ class MyViewModel : ViewModel() {
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
 
-    init {
-        getAllUsers()
-    }
-
-    private fun getAllUsers() {
+    fun getAllUsers(context: Context) {
         viewModelScope.launch {
             try {
-                val users = RetrofitInstance.api.getAllUsers() // Llamada a la API
+                val users = RetrofitInstance.getApiService(context).getAllUsers()
                 _data.value = users
-            }  catch (e: Exception) {
-                _error.value = "No se pudo obtener los datos"
-                Log.d("MyDataItem", "Error al obtener los datos: $e")
+            } catch (e: Exception) {
+                _error.value = "No se pudo obtener los datos: ${e.localizedMessage}"
+                Log.d("MyViewModel", "Error al obtener los datos: $e")
             }
         }
     }
 }
+
+

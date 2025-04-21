@@ -1,5 +1,7 @@
 package com.robpalmol.tribeme.Screens
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -13,14 +15,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.robpalmol.tribeme.Components.CreateSesion
 import com.robpalmol.tribeme.Components.NoAccount
@@ -33,12 +39,38 @@ import com.robpalmol.tribeme.Components.UserName
 import com.robpalmol.tribeme.Components.YesAccount
 import com.robpalmol.tribeme.Components.divisor
 import com.robpalmol.tribeme.R
+import com.robpalmol.tribeme.ViewModels.LoginViewModel
 import com.robpalmol.tribeme.ui.theme.DifuminatedBackground
 
 @Composable
-fun LogIn(navController: NavHostController) {
+fun LogIn(navController: NavHostController, loginViewModel: LoginViewModel = viewModel()) {
     val email = rememberSaveable { mutableStateOf("") }
     val password = rememberSaveable { mutableStateOf("") }
+
+    // Obtener el contexto actual
+    val context = LocalContext.current
+
+    // Observar el estado de autenticación
+    val authState by loginViewModel.authState.collectAsState()
+    val errorState by loginViewModel.error.collectAsState()
+
+    // Mostrar un mensaje si hubo un error
+    LaunchedEffect(errorState) {
+        if (!errorState.isNullOrEmpty()) {
+            // Mostrar un Toast o un mensaje con el error
+            Toast.makeText(context, errorState, Toast.LENGTH_LONG).show()
+            Log.d("LoginError", errorState!!)
+        }
+    }
+
+    // Mostrar un mensaje si el inicio de sesión fue exitoso
+    LaunchedEffect(authState) {
+        if (authState != null) {
+            // Puedes mostrar un mensaje de éxito o navegar
+            Toast.makeText(context, "Inicio de sesión exitoso", Toast.LENGTH_LONG).show()
+            Log.d("LoginSuccess", authState.toString())
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -74,19 +106,23 @@ fun LogIn(navController: NavHostController) {
             Column {
                 PasswordForgoten()
                 Spacer(modifier = Modifier.height(5.dp))
-                StartSesion(text = "Iniciar session", navController)
+                StartSesion(
+                    text = "Iniciar sesión",
+                    navHostController = navController,
+                    name = null,
+                    onClick = {
+                        loginViewModel.loginUserAndNavigate(navController, email.value, password.value, context)
+                    }
+                )
                 Spacer(modifier = Modifier.height(20.dp))
                 divisor()
-                Spacer(modifier = Modifier.height(20.dp))
-                /*
-                GoogleStartSesion(text = "Iniciar sesión con Google")
-                */
                 Spacer(modifier = Modifier.height(20.dp))
                 NoAccount(navController)
             }
         }
     }
 }
+
 
 
 @Composable

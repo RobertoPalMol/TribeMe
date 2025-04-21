@@ -19,3 +19,8 @@ data class User(
     val contraseña: String,
     val fechaCreacion: String
 )
+
+data class AuthResponse(
+    val token: String,
+    val user: User
+)

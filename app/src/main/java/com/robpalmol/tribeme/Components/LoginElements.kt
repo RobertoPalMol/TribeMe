@@ -370,24 +370,15 @@ fun YesAccount(navController2: NavHostController) {
 fun StartSesion(
     text: String,
     navHostController: NavHostController,
-    name: String? = null
+    name: String? = null,
+    onClick: () -> Unit = {}
 ) {
-    val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
-
     Row(
         horizontalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = Modifier.fillMaxWidth()
     ) {
         Button(
-            onClick = {
-                if (name.isNullOrEmpty()) {
-
-                } else {
-                    navHostController.navigate("Register")
-                }
-            },
+            onClick = onClick,
             colors = ButtonDefaults.buttonColors(BluePost),
             modifier = Modifier
                 .width(300.dp)
@@ -402,6 +393,7 @@ fun StartSesion(
         }
     }
 }
+
 
 @Composable
 fun divisor() {
