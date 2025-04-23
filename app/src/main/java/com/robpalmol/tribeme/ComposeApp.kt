@@ -47,6 +47,7 @@ import com.robpalmol.tribeme.Screens.CreateTribe
 import com.robpalmol.tribeme.Screens.LogIn
 import com.robpalmol.tribeme.Screens.MyDataScreen
 import com.robpalmol.tribeme.Screens.Register
+import com.robpalmol.tribeme.Screens.SearchScreen
 import com.robpalmol.tribeme.ui.theme.BlackListOfBackground
 import com.robpalmol.tribeme.ui.theme.BlackPost
 import com.robpalmol.tribeme.ui.theme.BluePost
@@ -70,11 +71,11 @@ fun ComposeApp() {
     val spaceBetweenNavBarItems = configuration.screenWidthDp.dp / 5
 
     val routes = listOf(
-        Route("Inicio", R.drawable.ic_launcher_background, R.drawable.ic_launcher_foreground),
-        Route("Buscar", R.drawable.ic_launcher_background, R.drawable.ic_launcher_foreground),
-        Route("Crear", R.drawable.ic_launcher_background, R.drawable.ic_launcher_foreground),
+        Route("Inicio", R.drawable.home_outlined, R.drawable.home_solid),
+        Route("Buscar", R.drawable.magnifying_glass_outlined, R.drawable.magnifying_glass_solid),
+        Route("Crear", R.drawable.plus_square_outlined, R.drawable.plus_square_solid),
         Route("Tribus", R.drawable.ic_launcher_background, R.drawable.ic_launcher_foreground),
-        Route("Usuario", R.drawable.ic_launcher_background, R.drawable.ic_launcher_foreground),
+        Route("Usuario", R.drawable.profile_outlined, R.drawable.profile_outlined),
         Route("HomeExtended", showInMenu = false, showMenu = false),
         Route("Login", showInMenu = false, showMenu = false),
         Route("Register", showInMenu = false, showMenu = false),
@@ -118,7 +119,7 @@ fun ComposeApp() {
                 LogIn(navController)
             }
             composable(route = "Buscar") {
-                LogIn(navController)
+                SearchScreen()
             }
             composable(route = "Crear") {
                 CreateTribe("Crear Tribu", remember { mutableStateOf("") }, remember { mutableStateOf("") })

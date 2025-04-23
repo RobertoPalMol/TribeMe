@@ -16,10 +16,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
@@ -27,12 +29,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.robpalmol.tribeme.Components.AddPhoto
-import com.robpalmol.tribeme.Components.AddUbication
+import com.robpalmol.tribeme.Components.BooleanTribe
 import com.robpalmol.tribeme.Components.CategoriasCarrusel
-import com.robpalmol.tribeme.Components.EventDate
-import com.robpalmol.tribeme.Components.EventDescription
-import com.robpalmol.tribeme.Components.EventName
+import com.robpalmol.tribeme.Components.MaxMembers
 import com.robpalmol.tribeme.Components.SaveElement
+import com.robpalmol.tribeme.Components.TribeDescription
+import com.robpalmol.tribeme.Components.TribeName
 import com.robpalmol.tribeme.ui.theme.BlackPost
 import com.robpalmol.tribeme.ui.theme.DifuminatedBackground
 
@@ -41,13 +43,11 @@ import com.robpalmol.tribeme.ui.theme.DifuminatedBackground
 fun CreateTribe(Title: String, authorName: MutableState<String>, autorId: MutableState<String>) {
     val Name = rememberSaveable { mutableStateOf("") }
     val Description = rememberSaveable { mutableStateOf("") }
-    val startDate = rememberSaveable { mutableStateOf("") }
-    val startTime = rememberSaveable { mutableStateOf("") }
-    val endDate = rememberSaveable { mutableStateOf("") }
-    val endTime = rememberSaveable { mutableStateOf("") }
-    val Ubication = rememberSaveable { mutableStateOf("") }
+    val members = rememberSaveable { mutableIntStateOf(0)  }
     val selectedCategories = rememberSaveable { mutableStateOf(setOf<String>()) }
     val imageUrl = rememberSaveable { mutableStateOf("") }
+    val private1 = remember { mutableStateOf(true) }
+    val private2 = remember { mutableStateOf(true) }
     val dateError = remember { mutableStateOf(false) }
 
     Column(modifier = Modifier
@@ -75,17 +75,17 @@ fun CreateTribe(Title: String, authorName: MutableState<String>, autorId: Mutabl
                 .clip(shape = RoundedCornerShape(20.dp, 20.dp))
                 .background(Brush.verticalGradient(DifuminatedBackground))
         ) {
-            item { EventName(Name) }
-            item { EventDescription(description = Description) }
-            item { EventDate(true, startDate, startTime, startDate, endDate, dateError) }
-            item { EventDate(false, endDate, endTime, startDate, endDate, dateError) }
+            item { TribeName(Name) }
+            item { TribeDescription(description = Description) }
+            item { MaxMembers(members = members) }
             item { CategoriasCarrusel(selectedCategories = selectedCategories, onCategorySelect = { updatedCategories -> selectedCategories.value =
                 updatedCategories.toMutableList().toSet()
             }) }
             item { AddPhoto(imageUrl) }
-            item { Row (modifier = Modifier.fillMaxWidth().wrapContentWidth(Alignment.CenterHorizontally)){/*TODO*/} }
-            item { AddUbication(ubication = Ubication) }
-            item { SaveElement(Name, Description, startDate, startTime ,endDate, endTime, selectedCategories, Ubication, authorName, autorId, imageUrl, dateError) }
+            //item { Row (modifier = Modifier.fillMaxWidth().wrapContentWidth(Alignment.CenterHorizontally)){PostPhoto(imageUrl?.value)}}
+            item { BooleanTribe("Tribu privada", private1) }
+            item { BooleanTribe("Los miembros podrán crear eventos", private2) }
+            item { SaveElement(Name, Description, selectedCategories, authorName, autorId, imageUrl, dateError) }
             item { Spacer(modifier = Modifier.height(120.dp)) }
         }
     }

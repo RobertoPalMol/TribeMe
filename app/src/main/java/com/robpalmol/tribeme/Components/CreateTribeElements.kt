@@ -8,6 +8,9 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -18,21 +21,31 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.absoluteOffset
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -52,11 +65,13 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.canhub.cropper.CropImageContract
@@ -76,25 +91,25 @@ val category_icons = arrayOf(
     R.drawable.sports_image,
     R.drawable.music_image,
     R.drawable.art_image,
-    R.drawable.social_image,
-    R.drawable.familiar_image,
+    R.drawable.tech_screen,
+    R.drawable.pet_footprint,
     R.drawable.school_image,
-    R.drawable.health_image,
-    R.drawable.food_image
+    R.drawable.freak_die,
+    R.drawable.travel_suitcase
 )
 val categoryNames = listOf(
     "Deportes",
     "Música",
     "Arte",
-    "Social",
-    "Familiar",
+    "Tecnología",
+    "Mascotas",
     "Escuela",
-    "Salud",
-    "Comida"
+    "Friki",
+    "Estilo de vida"
 )
 
 @Composable
-fun EventName(name: MutableState<String>) {
+fun TribeName(name: MutableState<String>) {
     val maxChar = 20
     Spacer(
         modifier = Modifier
@@ -106,7 +121,7 @@ fun EventName(name: MutableState<String>) {
                 .width(60.dp)
         )
         Text(
-            text = "Nombre del evento",
+            text = "Nombre de la Tribu",
             style = TextStyle(
                 fontSize = 15.sp
             )
@@ -144,7 +159,7 @@ fun EventName(name: MutableState<String>) {
                     ),
                     placeholder = {
                         Text(
-                            text = "Nombre del evento",
+                            text = "Nombre de la Tribu",
                             style = TextStyle(color = GrayLetter)
                         )
                     },
@@ -163,9 +178,8 @@ fun EventName(name: MutableState<String>) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EventDescription(description: MutableState<String>) {
+fun TribeDescription(description: MutableState<String>) {
     val maxChar = 200
     Spacer(
         modifier = Modifier
@@ -177,7 +191,7 @@ fun EventDescription(description: MutableState<String>) {
                 .width(60.dp)
         )
         Text(
-            text = "Descripción del evento",
+            text = "Descripción de la Tribu",
             style = TextStyle(
                 fontSize = 15.sp
             )
@@ -212,10 +226,10 @@ fun EventDescription(description: MutableState<String>) {
                         focusedContainerColor = WhitePost,
                         unfocusedContainerColor = WhitePost,
                         disabledContainerColor = WhitePost
-                ),
+                    ),
                     placeholder = {
                         Text(
-                            text = "Descripción del evento",
+                            text = "Descripción de la Tribu",
                             style = TextStyle(color = GrayLetter)
                         )
                     },
@@ -234,220 +248,85 @@ fun EventDescription(description: MutableState<String>) {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EventDate(
-    isStartDate: Boolean,
-    selectedDate: MutableState<String>,
-    selectedTime: MutableState<String>,
-    startDate: MutableState<String>,
-    endDate: MutableState<String>,
-    dateError: MutableState<Boolean>
-) {
-    var datePicker by remember { mutableStateOf(false) }
-    var timePicker by remember { mutableStateOf(false) }
-    val errorMessage = "La fecha de finalización no puede ser anterior a la fecha de inicio."
-    val datePickerState = rememberDatePickerState()
+fun MaxMembers(members: MutableState<Int>) {
+    val expanded = remember { mutableStateOf(false) }
+    val options = (1..25).toList()
 
     Spacer(modifier = Modifier.height(30.dp))
 
-    Row {
-        if (isStartDate) {
-            Spacer(modifier = Modifier.width(50.dp))
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .background(BlackPost, shape = RoundedCornerShape(20.dp))
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             Text(
-                text = "Día de inicio:",
-                style = TextStyle(fontSize = 15.sp)
+                text = "Número Máximo de Miembros",
+                style = TextStyle(fontSize = 15.sp),
+                color = WhitePost
             )
-            Spacer(modifier = Modifier.width(100.dp))
-            Text(
-                text = "Hora de inicio:",
-                style = TextStyle(fontSize = 15.sp)
-            )
-        } else {
-            Spacer(modifier = Modifier.width(50.dp))
-            Text(
-                text = "Día de finalización:",
-                style = TextStyle(fontSize = 15.sp)
-            )
-            Spacer(modifier = Modifier.width(60.dp))
-            Text(
-                text = "Hora de finalización:",
-                style = TextStyle(fontSize = 15.sp)
-            )
+            Spacer(modifier = Modifier.width(10.dp))
+
+            ExposedDropdownMenuBox(
+                expanded = expanded.value,
+                onExpandedChange = { expanded.value = !expanded.value }
+            ) {
+                TextField(
+                    readOnly = true,
+                    value = members.value.toString(),
+                    onValueChange = {},
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded.value)
+                    },
+                    colors = TextFieldDefaults.colors(
+                        cursorColor = BlackPost,
+                        disabledLabelColor = BlackPost,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedLabelColor = BlackPost,
+                        focusedContainerColor = WhitePost,
+                        unfocusedContainerColor = WhitePost,
+                        disabledContainerColor = WhitePost
+                    ),
+                    modifier = Modifier
+                        .menuAnchor()
+                        .widthIn(min = 60.dp)
+                )
+
+                ExposedDropdownMenu(
+                    expanded = expanded.value,
+                    onDismissRequest = { expanded.value = false },
+                    modifier = Modifier
+                        .height(200.dp)
+                        .width(150.dp)
+                        .background(WhitePost, shape = RoundedCornerShape(20.dp))
+                ) {
+                    options.forEach { selectionOption ->
+                        DropdownMenuItem(
+                            text = { Text(text = selectionOption.toString()) },
+                            onClick = {
+                                members.value = selectionOption
+                                expanded.value = false
+                            }
+                        )
+                    }
+                }
+            }
         }
     }
 
     Spacer(modifier = Modifier.height(10.dp))
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 30.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Button(
-            onClick = { datePicker = true },
-            colors = ButtonDefaults.buttonColors(WhitePost)
-        ) {
-            Text(
-                text = if (selectedDate.value.isNotEmpty()) selectedDate.value else "Introduce el día",
-                style = TextStyle(fontSize = 15.sp, color = GrayLetter)
-            )
-        }
-
-        Button(
-            onClick = { timePicker = true },
-            colors = ButtonDefaults.buttonColors(WhitePost)
-        ) {
-            Text(
-                text = if (selectedTime.value.isNotEmpty()) selectedTime.value else "Introduce la hora",
-                style = TextStyle(fontSize = 15.sp, color = GrayLetter)
-            )
-        }
-    }
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 40.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        if (dateError.value && isStartDate.equals(false)) {
-            Text(text = errorMessage, color = Color.Red, fontSize = 12.sp)
-        }
-    }
-
-    LaunchedEffect(selectedDate.value, startDate.value, endDate.value) {
-        if (isStartDate) {
-            // Validar cuando se cambia la fecha de inicio
-            if (startDate.value.isNotEmpty() && endDate.value.isNotEmpty() && startDate.value > endDate.value) {
-                dateError.value = true
-            } else {
-                dateError.value = false
-                startDate.value = selectedDate.value // Guardar la fecha seleccionada como inicio
-            }
-        } else {
-            // Validar cuando se cambia la fecha de finalización
-            if (startDate.value.isNotEmpty() && endDate.value.isNotEmpty() && selectedDate.value < startDate.value) {
-                dateError.value = true
-            } else {
-                dateError.value = false
-                endDate.value = selectedDate.value // Guardar la fecha seleccionada como finalización
-            }
-        }
-    }
-
-
-
-    // Diálogo para seleccionar la fecha
-    if (datePicker) {
-        DatePickerDialog(
-            onDismissRequest = { datePicker = false },
-            confirmButton = {
-                Button(onClick = {
-                    val selectedMillis = datePickerState.selectedDateMillis
-                    selectedMillis?.let {
-                        val selectedDateFormatted = Instant.ofEpochMilli(it)
-                            .atZone(ZoneOffset.UTC)
-                            .toLocalDate()
-                            .toString()
-                        selectedDate.value = selectedDateFormatted
-                    }
-                    datePicker = false
-                }) {
-                    Text(text = "Confirmar")
-                }
-            }
-        ) {
-            DatePicker(state = datePickerState)
-        }
-    }
-
-    // Diálogo para seleccionar la hora
-    if (timePicker) {
-        TimePickerDialog(
-            onDismissRequest = { timePicker = false },
-            onTimeConfirm = { hour, minute ->
-                val formattedTime = String.format("%02d:%02d", hour, minute)
-                selectedTime.value = formattedTime
-                timePicker = false
-            }
-        )
-    }
 }
 
-//componente prestado de StackOverflow
-@Composable
-fun TimePickerDialog(
-    onDismissRequest: () -> Unit,
-    onTimeConfirm: (hour: Int, minute: Int) -> Unit
-) {
 
-    var selectedHour by remember { mutableStateOf(12) }
-    var selectedMinute by remember { mutableStateOf(0) }
-
-    AlertDialog(
-        onDismissRequest = { onDismissRequest() },
-        confirmButton = {
-            Button(onClick = { onTimeConfirm(selectedHour, selectedMinute) }) {
-                Text("Confirmar")
-            }
-        },
-        dismissButton = {
-            Button(onClick = { onDismissRequest() }) {
-                Text("Cancelar")
-            }
-        },
-        title = { Text("Selecciona la hora") },
-        text = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                // Selector de Horas
-                LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    items(24) { hour ->
-                        Text(
-                            text = hour.toString().padStart(2, '0'),
-                            modifier = Modifier
-                                .padding(4.dp)
-                                .clickable { selectedHour = hour },
-                            color = if (hour == selectedHour) Color.Blue else Color.Black,
-                            fontWeight = if (hour == selectedHour) FontWeight.Bold else FontWeight.Normal
-                        )
-                    }
-                }
-
-                // Separador de Hora y Minutos
-                Text(
-                    text = ":",
-                    style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold),
-                    modifier = Modifier.align(Alignment.CenterVertically)
-                )
-
-                // Selector de Minutos
-                LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    items(60) { minute ->
-                        Text(
-                            text = minute.toString().padStart(2, '0'),
-                            modifier = Modifier
-                                .padding(4.dp)
-                                .clickable { selectedMinute = minute },
-                            color = if (minute == selectedMinute) Color.Blue else Color.Black,
-                            fontWeight = if (minute == selectedMinute) FontWeight.Bold else FontWeight.Normal
-                        )
-                    }
-                }
-            }
-        }
-    )
-}
 
 
 
@@ -512,7 +391,9 @@ fun CategoryButton(
     ) {
         Button(
             onClick = onClick,
-            colors = if (isSelected) ButtonDefaults.buttonColors(BluePost) else ButtonDefaults.buttonColors(WhitePost),
+            colors = if (isSelected) ButtonDefaults.buttonColors(BluePost) else ButtonDefaults.buttonColors(
+                WhitePost
+            ),
             modifier = Modifier
                 .height(45.dp)
                 .clip(RoundedCornerShape(20.dp, 20.dp)),
@@ -589,115 +470,120 @@ fun AddPhoto(imageUrl: MutableState<String>) {
                 colors = ButtonDefaults.buttonColors(BluePost),
                 modifier = Modifier.height(60.dp)
             ) {
-                Text(text = "Agregar Foto", color = WhitePost)
+                Text(text = "+ Agregar Foto", color = WhitePost)
             }
         }
         Spacer(modifier = Modifier.height(10.dp))
     }
 }
-
-
-
-
-
-@OptIn(ExperimentalMaterial3Api::class)
+/*
 @Composable
-fun AddUbication(ubication: MutableState<String>) {
-    Column {
-        Spacer(modifier = Modifier.height(30.dp))
-        Row(Modifier.fillMaxWidth()) {
-            Spacer(modifier = Modifier.width(60.dp))
-            Text(text = "Introduce la ubicación")
-        }
-        Spacer(modifier = Modifier.height(10.dp))
-        Row {
-            Spacer(modifier = Modifier.width(50.dp))
+fun PostPhoto(imageUrl: String?) {
+    Box(
+        modifier = Modifier
+            .size(150.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(BlackPost)
+    ) {
+        if (!imageUrl.isNullOrEmpty()) {
+            Image(
+                painter = rememberAsyncImagePainter(imageUrl),
+                contentDescription = "Imagen subida",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(10.dp),
+                contentScale = ContentScale.Crop
+            )
+
+        } else {
             Box(
                 modifier = Modifier
-                    .background(WhitePost, shape = RoundedCornerShape(20.dp))
-                    .padding(8.dp)
-                    .size(280.dp, 50.dp)
+                    .fillMaxSize()
+                    .background(BlackPost)
+                    .padding(10.dp),
+                contentAlignment = Alignment.Center
             ) {
-                TextField(
-                    value = ubication.value,
-                    onValueChange = { ubication.value = it },
-                    textStyle = TextStyle(BlackPost),
-                    colors = TextFieldDefaults.colors(
-                        cursorColor = BlackPost,
-                        disabledLabelColor = BlackPost,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        focusedLabelColor = BlackPost,
-                        focusedContainerColor = WhitePost,
-                        unfocusedContainerColor = WhitePost,
-                        disabledContainerColor = WhitePost
-                    )
-                    ,
-                    placeholder = {
-                        Text(
-                            text = "Ubicación",
-                            style = TextStyle(color = GrayLetter)
-                        )
-                    },
-                )
+                Text(text = "No hay imagen adjunta", color = WhitePost)
             }
         }
-        Spacer(modifier = Modifier.height(5.dp))
-        Row {
-            Spacer(modifier = Modifier.width(60.dp))
+    }
+}
+
+ */
+
+
+@Composable
+fun BooleanTribe(text: String, private: MutableState<Boolean>) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .height(50.dp)
+                .background(WhitePost, shape = RoundedCornerShape(50.dp)),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Spacer(Modifier.width(20.dp))
             Text(
-                text = "Verifica que realmente esta es tu dirección",
-                color = BluePost,
-                fontSize = 12.sp
+                text = text,
+                maxLines = 3,
+                softWrap = true,
+                modifier = Modifier.weight(1f),
+                fontSize = 14.sp
             )
-        }
-        Spacer(modifier = Modifier.height(10.dp))
-        Row {
-            Spacer(modifier = Modifier.width(50.dp))
+
+            // Switch personalizado
+            val switchWidth = 150.dp
+            val switchHeight = 50.dp
+            val thumbWidth = 100.dp
+
             Box(
                 modifier = Modifier
-                    .background(BlackPost, shape = RoundedCornerShape(20.dp))
-                    .padding(8.dp)
-                    .size(275.dp, 30.dp)
+                    .padding(start = 10.dp)
+                    .width(switchWidth)
+                    .height(switchHeight)
+                    .clip(RoundedCornerShape(50))
+                    .background(Color.Black)
+                    .clickable { private.value = !private.value }
             ) {
-                Row(
+                val alignment by animateDpAsState(
+                    targetValue = if (private.value) (switchWidth - thumbWidth) else 0.dp,
+                    label = "Thumb position"
+                )
+
+                Box(
                     modifier = Modifier
-                        .size(275.dp, 30.dp)
-                        .clickable { /*TODO*/ },
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
+                        .offset(x = alignment)
+                        .width(thumbWidth)
+                        .fillMaxHeight()
+                        .clip(RoundedCornerShape(50))
+                        .background(BluePost),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(text = "Obtener Ubicación Actual", color = WhitePost)
+                    Text(
+                        text = if (private.value) "Sí" else "No",
+                        color = Color.White,
+                        fontSize = 12.sp
+                    )
                 }
             }
         }
-        Spacer(modifier = Modifier.height(20.dp))
-        Row (modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center) {
-            Box(
-                modifier = Modifier
-                    .size(350.dp, 400.dp)
-                    .background(WhitePost, shape = RoundedCornerShape(20.dp))
-                    .pointerInput(Unit) {
-                        detectTapGestures { }
-                    }
-            ) {
-                {/*TODO*/}
-            }
-        }
     }
 }
+
+
+
 
 @Composable
 fun SaveElement(
     name: MutableState<String>,
     description: MutableState<String>,
-    startDate: MutableState<String>,
-    startTime: MutableState<String>,
-    endDate: MutableState<String>,
-    endTime: MutableState<String>,
     selectedCategories: MutableState<Set<String>>, // This variable can be empty
-    ubication: MutableState<String>,
     autorName: MutableState<String>,
     autorId: MutableState<String>,
     imageUrl: MutableState<String>, // This variable can be empty
@@ -728,12 +614,7 @@ fun SaveElement(
                         saveEvent(
                             name,
                             description,
-                            startDate,
-                            startTime,
-                            endDate,
-                            endTime,
                             selectedCategories,
-                            ubication,
                             autorName,
                             autorId,
                             "",
@@ -749,11 +630,12 @@ fun SaveElement(
             colors = ButtonDefaults.buttonColors(containerColor = BluePost)
         ) {
             Text(
-                text = "Publicar evento",
+                text = "Empezar como Tribu",
                 fontSize = 24.sp,
                 color = WhitePost,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(vertical = 8.dp)
+                modifier = Modifier
+                    .padding(vertical = 8.dp)
                     .drawBehind {
                         if (dateError.value) { // Dibujar línea tachada si hay error
                             val textWidth = size.width
@@ -776,18 +658,17 @@ fun SaveElement(
 fun saveEvent(
     name: MutableState<String>,
     description: MutableState<String>,
-    startDate: MutableState<String>,
-    startTime: MutableState<String>,
-    endDate: MutableState<String>,
-    endTime: MutableState<String>,
     selectedCategories: MutableState<Set<String>>, // This variable can be empty
-    ubication: MutableState<String>,
     autorName: MutableState<String>,
     autorId: MutableState<String>,
     imageUrl: String,// This variable can be empty
     context: Context
-){
-    Toast.makeText(context, "Publicando Evento (esta acción puede tardar unos instantes)", Toast.LENGTH_SHORT).show()
+) {
+    Toast.makeText(
+        context,
+        "Publicando Evento (esta acción puede tardar unos instantes)",
+        Toast.LENGTH_SHORT
+    ).show()
 
     Log.d("SaveElement", "Evento a guardar")
 
