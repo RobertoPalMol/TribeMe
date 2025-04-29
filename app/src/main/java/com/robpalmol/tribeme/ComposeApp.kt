@@ -44,6 +44,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.robpalmol.tribeme.Components.CreateSesion
 import com.robpalmol.tribeme.Screens.CreateTribe
+import com.robpalmol.tribeme.Screens.HomeScreen
 import com.robpalmol.tribeme.Screens.LogIn
 import com.robpalmol.tribeme.Screens.MyDataScreen
 import com.robpalmol.tribeme.Screens.Register
@@ -113,7 +114,7 @@ fun ComposeApp() {
                 )
             }) {
             composable(route = "Inicio") {
-                LogIn(navController)
+                HomeScreen()
             }
             composable(route = "HomeExtended") {
                 LogIn(navController)

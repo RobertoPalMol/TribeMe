@@ -42,7 +42,6 @@ fun SearchBar() {
     // Mantener el estado del valor del TextField
     var textFieldValue by remember { mutableStateOf(TextFieldValue()) }
 
-    var icon = R.drawable.magnifying_glass_outlined
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center
@@ -80,7 +79,7 @@ fun SearchBar() {
                 )
                 Spacer(Modifier.weight(1f))
                 Icon(
-                    painterResource(id = icon),
+                    painterResource(id = R.drawable.magnifying_glass_outlined),
                     contentDescription = "",
                     modifier = Modifier
                         .size(45.dp)
