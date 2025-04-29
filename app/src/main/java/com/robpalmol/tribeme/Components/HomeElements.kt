@@ -25,19 +25,22 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.robpalmol.tribeme.DataBase.Models.Tribe
 import com.robpalmol.tribeme.R
 import com.robpalmol.tribeme.ui.theme.BlackPost
 import com.robpalmol.tribeme.ui.theme.BluePost
 import com.robpalmol.tribeme.ui.theme.GrayCategory
 import com.robpalmol.tribeme.ui.theme.WhitePost
 
-@Preview(showBackground = true)
+
 @Composable
-fun TribeElement() {
+fun TribeElement(tribe: Tribe) {
     val categories = listOf("Deportes", "Estilo de vida", "Música")
+
+    val miembros = tribe.miembros?: emptyList()
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -55,11 +58,11 @@ fun TribeElement() {
         ) {
             Box(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    "Locos por el senderismo",
+                    tribe.nombre,
                     style = TextStyle(fontWeight = Bold)
                 )
                 Text(
-                    text = "@Juan_senderista",
+                    text = "@${tribe.tribuCreador.nombre}",
                     color = BluePost,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
@@ -89,7 +92,7 @@ fun TribeElement() {
                         Spacer(modifier = Modifier.weight(1f))
 
                         Text(
-                            text = "Descripción afhnabfjiabfojabfuoibaobfhabfuabuoicfbuaobafhnabfjiabfojabfuoibaobfhabfuabuoicfbuaob...",
+                            text = tribe.descripcion,
                             maxLines = 5,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -97,7 +100,7 @@ fun TribeElement() {
                         Spacer(modifier = Modifier.weight(1f))
 
                         Text(
-                            text = "Participantes: 18/25"
+                            text = "Participantes: ${miembros.size}/${tribe.usuariosMaximos}"
                         )
 
                         Spacer(modifier = Modifier.weight(1f))

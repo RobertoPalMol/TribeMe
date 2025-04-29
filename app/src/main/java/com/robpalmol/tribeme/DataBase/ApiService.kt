@@ -1,6 +1,7 @@
 package com.robpalmol.tribeme.DataBase
 
 import com.robpalmol.tribeme.DataBase.Models.AuthResponse
+import com.robpalmol.tribeme.DataBase.Models.Tribe
 import com.robpalmol.tribeme.DataBase.Models.User
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -17,6 +18,9 @@ interface ApiService {
     @GET("api/usuarios") // Ruta relativa de tu API
     suspend fun getAllUsers(): List<User>
     @GET("api/usuarios/{id}")
-    suspend fun getUserbyId(@Path("id") id: Int): User
+    suspend fun getUserById(@Path("id") id: Long): User
+
+    @GET("api/tribus") // Ruta relativa de tu API
+    suspend fun getAllTribes(): List<Tribe>
 
 }

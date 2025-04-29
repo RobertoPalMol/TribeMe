@@ -96,7 +96,7 @@ fun ComposeApp() {
     ) {
         NavHost(
             navController = navController,
-            startDestination = "Inicio",
+            startDestination = "Login",
             enterTransition = {
                 slideIn(
                     animationSpec = tween(800),

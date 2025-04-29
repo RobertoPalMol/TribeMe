@@ -1,15 +1,18 @@
 package com.robpalmol.tribeme.DataBase.Models
 
 data class Tribe(
-    val idTribe: Int,
-    val name: String,
-    val description: String,
-    val maxMembers: Int,
-    val photo: String?,
-    val privateTribe: Boolean,
-    val privateEvent: Boolean,
-    val creator: User,
-    val creationTime: String
+    val tribuId: Int,
+    val nombre: String,
+    val descripcion: String,
+    val tribuCreador: User,
+    val fechaCreacion: String,
+    val fechaModificacion: String,
+    val imagen: String?,
+    val usuariosMaximos: Int,
+    val tribuPrivada: Boolean,
+    val crearEventos: Boolean,
+    val categorias: List<String>,
+    val miembros: List<User>
 )
 
 data class User(

@@ -20,7 +20,7 @@ import com.robpalmol.tribeme.ui.theme.BluePost
 @Composable
 fun MyDataScreen(viewModel: MyViewModel = viewModel()) {
     val context = LocalContext.current
-    val data by viewModel.data.collectAsState()
+    val data by viewModel.userData.collectAsState()
     val error by viewModel.error.collectAsState()
 
     // Llamar a getAllUsers cuando la pantalla se compone por primera vez
