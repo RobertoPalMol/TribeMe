@@ -128,6 +128,8 @@ fun LogIn(navController: NavHostController, loginViewModel: LoginViewModel = vie
 @Composable
 fun Register(navController2: NavHostController) {
 
+    val loginViewModel: LoginViewModel = viewModel()
+
     val name = rememberSaveable { mutableStateOf("") }
     val email = rememberSaveable { mutableStateOf("") }
     val password = rememberSaveable { mutableStateOf("") }
@@ -166,13 +168,16 @@ fun Register(navController2: NavHostController) {
             Spacer(modifier = Modifier.height(20.dp))
             Password(password)
             Spacer(modifier = Modifier.height(20.dp))
-            CreateSesion(navHostController = navController2)
+            CreateSesion(
+                navHostController = navController2,
+                loginViewModel = loginViewModel,
+                name = name.value,
+                email = email.value,
+                password = password.value
+            )
             Spacer(modifier = Modifier.height(20.dp))
             divisor()
             Spacer(modifier = Modifier.height(20.dp))
-            /*
-            GoogleStartSesion("Registrarse con Google")
-             */
             Spacer(modifier = Modifier.height(20.dp))
             YesAccount(navController2)
         }

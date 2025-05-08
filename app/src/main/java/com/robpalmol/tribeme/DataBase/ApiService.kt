@@ -13,14 +13,18 @@ interface ApiService {
     suspend fun loginUser(@Body user: User): AuthResponse
 
     @POST("api/auth/signup")
-    suspend fun registerUser(@Body user: User): User
+    suspend fun registerUser(@Body user: User): AuthResponse
 
-    @GET("api/usuarios") // Ruta relativa de tu API
+    @GET("api/usuarios")
     suspend fun getAllUsers(): List<User>
     @GET("api/usuarios/{id}")
     suspend fun getUserById(@Path("id") id: Long): User
 
-    @GET("api/tribus") // Ruta relativa de tu API
+    @GET("api/tribus")
     suspend fun getAllTribes(): List<Tribe>
+
+    @POST("api/tribus")
+    suspend fun crearTribu(@Body tribu: Tribe): Tribe
+
 
 }

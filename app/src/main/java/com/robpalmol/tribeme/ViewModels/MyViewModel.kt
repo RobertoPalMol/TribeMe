@@ -45,5 +45,28 @@ class MyViewModel : ViewModel() {
             }
         }
     }
+
+    fun getTribeById(id: Int): Tribe? {
+        Log.d("ViewModel", "Buscando tribu con ID: $id en lista: ${tribeData.value.map { it.tribuId }}")
+        return tribeData.value.find { it.tribuId == id }
+    }
+
+    fun createTribe(context: Context, tribe: Tribe, onSuccess: (Tribe) -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val createdTribe = RetrofitInstance.getApiService(context).crearTribu(tribe)
+                // Actualiza la lista de tribus con la nueva
+                _tribeData.value = _tribeData.value + createdTribe
+                onSuccess(createdTribe)
+            } catch (e: Exception) {
+                val errorMsg = "Error al crear la tribu: ${e.localizedMessage}"
+                _error.value = errorMsg
+                onError(errorMsg)
+                Log.e("MyViewModel", errorMsg, e)
+            }
+        }
+    }
+
+
 }
 

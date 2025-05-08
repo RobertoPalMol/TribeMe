@@ -9,8 +9,15 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitInstance {
     // Backend URLs
+
+    //Local
     private const val BASE_URL = "http://192.168.0.19:8081"
+
+    //render
     //private const val BASE_URL = "https://tribeme-backend.onrender.com"
+
+    //azure mv
+    //private const val BASE_URL = "http://20.84.117.63:8081"
 
     // Inicializar Retrofit con el Contexto disponible
     fun getRetrofitInstance(context: Context): Retrofit {

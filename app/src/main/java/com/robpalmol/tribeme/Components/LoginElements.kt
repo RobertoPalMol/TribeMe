@@ -1,5 +1,6 @@
 package com.robpalmol.tribeme.Components
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -39,14 +40,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.robpalmol.tribeme.R
+import com.robpalmol.tribeme.ViewModels.LoginViewModel
 import com.robpalmol.tribeme.ui.theme.BlackPost
 import com.robpalmol.tribeme.ui.theme.BluePost
 import com.robpalmol.tribeme.ui.theme.WhitePost
@@ -77,7 +81,7 @@ fun Password(
                     TextField(
                         value = password.value,
                         onValueChange = { password.value = it },
-                        label = { Text("Contraseña", fontSize = 15.sp) },
+                        label = { Text("Contraseña", fontSize = 15.sp, fontWeight = FontWeight.Bold)},
                         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         textStyle = TextStyle(BlackPost),
@@ -137,7 +141,6 @@ fun PasswordForgoten() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserMailName(mailname: MutableState<String>) {
 
@@ -162,7 +165,8 @@ fun UserMailName(mailname: MutableState<String>) {
                     label = {
                         Text(
                             "Correo o nombre de usuario",
-                            fontSize = 15.sp
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -275,8 +279,14 @@ fun UserName(name: MutableState<String>) {
 }
 
 @Composable
-fun CreateSesion(navHostController: NavHostController) {
-    val coroutineScope = rememberCoroutineScope()
+fun CreateSesion(
+    navHostController: NavHostController,
+    loginViewModel: LoginViewModel = viewModel(),
+    name: String,
+    email: String,
+    password: String
+) {
+    val context = LocalContext.current
 
     Row(
         horizontalArrangement = Arrangement.Center,
@@ -284,10 +294,14 @@ fun CreateSesion(navHostController: NavHostController) {
     ) {
         Button(
             onClick = {
-                coroutineScope.launch {
-                    // Registro exitoso, navegar a la pantalla de inicio
-                    navHostController.navigate("Home")
-                }
+                loginViewModel.registerUserAndNavigate(
+                    navController = navHostController,
+                    name = name,
+                    email = email,
+                    password = password,
+                    context = context
+                )
+                Log.d("SignIn", "Cuenta creada con éxito")
             },
             colors = ButtonDefaults.buttonColors(BluePost),
             modifier = Modifier
@@ -303,6 +317,7 @@ fun CreateSesion(navHostController: NavHostController) {
         }
     }
 }
+
 
 
 @Composable
@@ -419,39 +434,3 @@ fun divisor() {
         )
     }
 }
-
-/*
-@Composable
-fun GoogleStartSesion(
-    text: String,
-) {
-    Button(
-        onClick = {/*TODO*/
-        },
-        modifier = Modifier
-            .width(400.dp)
-            .height(60.dp)
-            .padding(horizontal = 50.dp),
-        colors = ButtonDefaults.buttonColors(WhitePost),
-        border = BorderStroke(1.dp, BluePost)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.google_img),
-                contentDescription = "Google Icon",
-                tint = Color.Unspecified,
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = text,
-                color = Color.Black
-            )
-        }
-    }
-}
-
- */

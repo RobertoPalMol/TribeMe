@@ -1,6 +1,7 @@
 package com.robpalmol.tribeme
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -24,6 +25,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -37,18 +40,22 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.robpalmol.tribeme.Components.CreateSesion
+import com.robpalmol.tribeme.Components.TribeDetailScreen
 import com.robpalmol.tribeme.Screens.CreateTribe
 import com.robpalmol.tribeme.Screens.HomeScreen
 import com.robpalmol.tribeme.Screens.LogIn
 import com.robpalmol.tribeme.Screens.MyDataScreen
 import com.robpalmol.tribeme.Screens.Register
 import com.robpalmol.tribeme.Screens.SearchScreen
+import com.robpalmol.tribeme.ViewModels.LoginViewModel
+import com.robpalmol.tribeme.ViewModels.MyViewModel
 import com.robpalmol.tribeme.ui.theme.BlackListOfBackground
 import com.robpalmol.tribeme.ui.theme.BlackPost
 import com.robpalmol.tribeme.ui.theme.BluePost
@@ -71,13 +78,15 @@ fun ComposeApp() {
     val configuration = LocalConfiguration.current
     val spaceBetweenNavBarItems = configuration.screenWidthDp.dp / 5
 
+    val viewModel: MyViewModel = viewModel()
+
     val routes = listOf(
         Route("Inicio", R.drawable.home_outlined, R.drawable.home_solid),
         Route("Buscar", R.drawable.magnifying_glass_outlined, R.drawable.magnifying_glass_solid),
         Route("Crear", R.drawable.plus_square_outlined, R.drawable.plus_square_solid),
         Route("Tribus", R.drawable.ic_launcher_background, R.drawable.ic_launcher_foreground),
         Route("Usuario", R.drawable.profile_outlined, R.drawable.profile_outlined),
-        Route("HomeExtended", showInMenu = false, showMenu = false),
+        Route("detail/{tribeId}", showInMenu = false, showMenu = false),
         Route("Login", showInMenu = false, showMenu = false),
         Route("Register", showInMenu = false, showMenu = false),
     )
@@ -113,12 +122,37 @@ fun ComposeApp() {
                     },
                 )
             }) {
-            composable(route = "Inicio") {
-                HomeScreen()
+            composable("Inicio") {
+                HomeScreen(
+                    onItemClick = { selectedTribe ->
+                        navController.navigate("detail/${selectedTribe.tribuId}")
+                    },
+                    viewModel = viewModel,
+                    loginViewModel = LoginViewModel()
+                )
             }
-            composable(route = "HomeExtended") {
-                LogIn(navController)
+
+            composable("detail/{tribeId}") { backStackEntry ->
+                val tribeId = backStackEntry.arguments?.getString("tribeId")?.toIntOrNull()
+
+                if (tribeId != null) {
+                    val tribe = viewModel.getTribeById(tribeId)
+
+                    if (tribe != null) {
+                        TribeDetailScreen(tribe)
+                    } else {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text("Cargando tribu...", color = WhitePost)
+                        }
+                    }
+                } else {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("ID de tribu inválido")
+                    }
+                }
             }
+
+
             composable(route = "Buscar") {
                 SearchScreen()
             }

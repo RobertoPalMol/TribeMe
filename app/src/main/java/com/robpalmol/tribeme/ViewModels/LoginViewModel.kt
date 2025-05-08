@@ -1,6 +1,8 @@
 package com.robpalmol.tribeme.ViewModels
 
 import android.content.Context
+import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
@@ -19,24 +21,12 @@ class LoginViewModel : ViewModel() {
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
 
-    fun login(user: User, context: Context) {
-        viewModelScope.launch {
-            try {
-                val response = RetrofitInstance.getApiService(context).loginUser(user)
-                if (response.token.isNotEmpty()) {
-                    // Guardamos el token en la sesión
-                    SessionManager(context).saveToken(response.token)
-                    _authState.value = response
-                } else {
-                    _error.value = "Token vacío"
-                }
-            } catch (e: Exception) {
-                _error.value = "Error en el login: ${e.message}"
-            }
-        }
-    }
-
-    fun loginUserAndNavigate(navController: NavHostController, email: String, password: String, context: Context) {
+    fun loginUserAndNavigate(
+        navController: NavHostController,
+        email: String,
+        password: String,
+        context: Context
+    ) {
         viewModelScope.launch {
             try {
                 // Hacer login
@@ -53,6 +43,37 @@ class LoginViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 _error.value = "Error al iniciar sesión: ${e.message}"
+            }
+        }
+    }
+
+    fun registerUserAndNavigate(
+        navController: NavHostController,
+        name: String,
+        email: String,
+        password: String,
+        context: Context
+    ) {
+        viewModelScope.launch {
+            try {
+                val user = User(0, name, email, password, "")
+                val response = RetrofitInstance.getApiService(context).registerUser(user)
+                Log.d("SignInDebug", "Token: ${response.token}, User: ${response.user}")
+
+                if (!response.token.isNullOrEmpty()) {
+                    Log.d("SignIn", "Cuenta creada con éxito")
+                    Toast.makeText(context, "Cuenta creada con éxito", Toast.LENGTH_LONG).show()
+                    _authState.value = response
+                    SessionManager(context).saveToken(response.token)
+                    navController.navigate("Inicio")
+                } else {
+                    Log.e("SignIn", "Token inválido: ${response.token}")
+                    _error.value = "Error al registrar: respuesta inválida"
+                }
+
+            } catch (e: Exception) {
+                Log.e("SignInError", "Exception: ${e.localizedMessage}", e)
+                _error.value = "Error al registrar: ${e.message}"
             }
         }
     }
