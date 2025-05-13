@@ -4,7 +4,9 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.robpalmol.tribeme.DataBase.Models.CreateTribeRequest
 import com.robpalmol.tribeme.DataBase.Models.Tribe
+import com.robpalmol.tribeme.DataBase.Models.TribuDTO
 import com.robpalmol.tribeme.DataBase.Models.User
 import com.robpalmol.tribeme.DataBase.RetrofitInstance
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,15 +50,33 @@ class MyViewModel : ViewModel() {
 
     fun getTribeById(id: Int): Tribe? {
         Log.d("ViewModel", "Buscando tribu con ID: $id en lista: ${tribeData.value.map { it.tribuId }}")
-        return tribeData.value.find { it.tribuId == id }
+        return tribeData.value.find { it.tribuId.toInt() == id }
     }
 
-    fun createTribe(context: Context, tribe: Tribe, onSuccess: (Tribe) -> Unit, onError: (String) -> Unit) {
+    fun createTribe(
+        context: Context,
+        createRequest: CreateTribeRequest,
+        onSuccess: (Tribe) -> Unit,
+        onError: (String) -> Unit
+    ) {
         viewModelScope.launch {
             try {
-                val createdTribe = RetrofitInstance.getApiService(context).crearTribu(tribe)
-                // Actualiza la lista de tribus con la nueva
+                var currentUser: User? = null
+
+                val tribuDTO = TribuDTO(
+                    nombre = createRequest.nombre,
+                    descripcion = createRequest.descripcion,
+                    imagenUrl = createRequest.imagenUrl,
+                    numeroMaximoMiembros = createRequest.numeroMaximoMiembros,
+                    esPrivada = createRequest.esPrivada,
+                    categorias = createRequest.categorias,
+                    autorId = currentUser?.usuarioId ?: 0
+                )
+
+                val createdTribe = RetrofitInstance.getApiService(context).crearTribu(tribuDTO)
+
                 _tribeData.value = _tribeData.value + createdTribe
+
                 onSuccess(createdTribe)
             } catch (e: Exception) {
                 val errorMsg = "Error al crear la tribu: ${e.localizedMessage}"
@@ -66,7 +86,5 @@ class MyViewModel : ViewModel() {
             }
         }
     }
-
-
 }
 

@@ -19,6 +19,9 @@ object RetrofitInstance {
     //azure mv
     //private const val BASE_URL = "http://20.84.117.63:8081"
 
+    //portatil back
+    //private const val BASE_URL = "http://192.168.0.31:8081"
+
     // Inicializar Retrofit con el Contexto disponible
     fun getRetrofitInstance(context: Context): Retrofit {
         // Obtener el token de sesión guardado

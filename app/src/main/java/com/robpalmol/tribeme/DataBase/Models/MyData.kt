@@ -1,19 +1,37 @@
 package com.robpalmol.tribeme.DataBase.Models
 
+
 data class Tribe(
-    val tribuId: Int,
+    val tribuId: Long,
     val nombre: String,
     val descripcion: String,
-    val tribuCreador: User,
-    val fechaCreacion: String,
-    val fechaModificacion: String,
-    val imagen: String?,
-    val usuariosMaximos: Int,
-    val tribuPrivada: Boolean,
-    val crearEventos: Boolean,
+    val imagenUrl: String?,
     val categorias: List<String>,
-    val miembros: List<User>
+    val numeroMaximoMiembros: Int,
+    val esPrivada: Boolean,
+    val fechaCreacion: String,
+    val autorId: String,
+    val autorNombre: String
 )
+data class TribuDTO(
+    val nombre: String,
+    val descripcion: String,
+    val imagenUrl: String,
+    val categorias: List<String>,
+    val numeroMaximoMiembros: Int,
+    val esPrivada: Boolean,
+    val autorId: Long
+)
+
+data class CreateTribeRequest(
+    val nombre: String,
+    val descripcion: String,
+    val categorias: List<String>,
+    val imagenUrl: String,
+    val numeroMaximoMiembros: Int,
+    val esPrivada: Boolean
+)
+
 
 data class User(
     val usuarioId: Long,

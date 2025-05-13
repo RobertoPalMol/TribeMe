@@ -1,5 +1,6 @@
 package com.robpalmol.tribeme.Screens
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,6 +13,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -25,7 +27,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.robpalmol.tribeme.Components.TribeElement
 import com.robpalmol.tribeme.DataBase.Models.Tribe
-import com.robpalmol.tribeme.ViewModels.LoginViewModel
 import com.robpalmol.tribeme.ViewModels.MyViewModel
 import com.robpalmol.tribeme.ui.theme.BlackPost
 import com.robpalmol.tribeme.ui.theme.DifuminatedBackground
@@ -34,12 +35,15 @@ import com.robpalmol.tribeme.ui.theme.DifuminatedBackground
 fun HomeScreen(
     onItemClick: (Tribe) -> Unit,
     viewModel: MyViewModel = viewModel(),
-    loginViewModel: LoginViewModel
+    reloadKey: Any
 ) {
-    val tribeList by viewModel.tribeData.collectAsState()
     val context = LocalContext.current
 
-    LaunchedEffect(Unit) {
+    // Estado reactivo que renderiza la lista
+    val tribeList by viewModel.tribeData.collectAsState(initial = emptyList())
+
+    // Efecto que dispara la llamada al backend
+    LaunchedEffect(reloadKey) {
         viewModel.getAllTribes(context)
     }
 
@@ -49,7 +53,6 @@ fun HomeScreen(
             .background(BlackPost)
     ) {
         Spacer(modifier = Modifier.height(40.dp))
-
         Row {
             Spacer(modifier = Modifier.width(20.dp))
             Text(
@@ -58,7 +61,6 @@ fun HomeScreen(
                 fontSize = 32.sp
             )
         }
-
         Spacer(modifier = Modifier.height(20.dp))
 
         LazyColumn(
@@ -67,9 +69,7 @@ fun HomeScreen(
                 .clip(RoundedCornerShape(20.dp))
                 .background(Brush.verticalGradient(DifuminatedBackground))
         ) {
-            item {
-                Spacer(modifier = Modifier.height(20.dp))
-            }
+            item { Spacer(modifier = Modifier.height(20.dp)) }
 
             items(tribeList) { tribe ->
                 TribeElement(tribe = tribe, onClick = { onItemClick(tribe) })

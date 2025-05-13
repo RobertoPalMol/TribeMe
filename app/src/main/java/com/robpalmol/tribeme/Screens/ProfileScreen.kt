@@ -1,9 +1,6 @@
 package com.robpalmol.tribeme.Screens
 
-import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,7 +28,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.robpalmol.tribeme.Components.ActiveElements
 import com.robpalmol.tribeme.Components.CloseSesion
-import com.robpalmol.tribeme.Components.YourPostElement
 import com.robpalmol.tribeme.ui.theme.BlackPost
 import com.robpalmol.tribeme.ui.theme.DifuminatedBackground
 

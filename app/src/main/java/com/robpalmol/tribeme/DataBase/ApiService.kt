@@ -2,6 +2,7 @@ package com.robpalmol.tribeme.DataBase
 
 import com.robpalmol.tribeme.DataBase.Models.AuthResponse
 import com.robpalmol.tribeme.DataBase.Models.Tribe
+import com.robpalmol.tribeme.DataBase.Models.TribuDTO
 import com.robpalmol.tribeme.DataBase.Models.User
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -24,7 +25,7 @@ interface ApiService {
     suspend fun getAllTribes(): List<Tribe>
 
     @POST("api/tribus")
-    suspend fun crearTribu(@Body tribu: Tribe): Tribe
+    suspend fun crearTribu(@Body tribu: TribuDTO): Tribe
 
 
 }

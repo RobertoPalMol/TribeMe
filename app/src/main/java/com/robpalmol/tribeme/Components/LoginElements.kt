@@ -21,17 +21,14 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -54,7 +51,6 @@ import com.robpalmol.tribeme.ViewModels.LoginViewModel
 import com.robpalmol.tribeme.ui.theme.BlackPost
 import com.robpalmol.tribeme.ui.theme.BluePost
 import com.robpalmol.tribeme.ui.theme.WhitePost
-import kotlinx.coroutines.launch
 
 
 @Composable
@@ -191,8 +187,6 @@ fun UserMailName(mailname: MutableState<String>) {
     }
 }
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserMailDirection(mail: MutableState<String>) {
     Row(
@@ -235,7 +229,6 @@ fun UserMailDirection(mail: MutableState<String>) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserName(name: MutableState<String>) {
     Row(
@@ -317,8 +310,6 @@ fun CreateSesion(
         }
     }
 }
-
-
 
 @Composable
 fun NoAccount(navController: NavHostController) {
@@ -408,7 +399,6 @@ fun StartSesion(
         }
     }
 }
-
 
 @Composable
 fun divisor() {

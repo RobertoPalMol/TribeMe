@@ -59,8 +59,6 @@ fun MyDataItem(user: User, currentUserID: MutableState<Long?>) {
             Column {
                 Text(text = user.nombre)
                 Text(text = user.correo)
-                Text(text = user.contraseña)
-                Text(text = user.fechaCreacion)
                 Log.d("MyDataItem", "User ID: ${user.usuarioId}")
             }
         }

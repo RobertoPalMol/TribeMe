@@ -25,8 +25,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -46,7 +44,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.robpalmol.tribeme.Components.CreateSesion
 import com.robpalmol.tribeme.Components.TribeDetailScreen
 import com.robpalmol.tribeme.Screens.CreateTribe
 import com.robpalmol.tribeme.Screens.HomeScreen
@@ -122,16 +119,16 @@ fun ComposeApp() {
                     },
                 )
             }) {
-            composable("Inicio") {
+            composable("Inicio") { backStackEntry ->
+                val reloadKey = backStackEntry.destination.route + System.currentTimeMillis()
                 HomeScreen(
                     onItemClick = { selectedTribe ->
                         navController.navigate("detail/${selectedTribe.tribuId}")
                     },
                     viewModel = viewModel,
-                    loginViewModel = LoginViewModel()
+                    reloadKey = reloadKey
                 )
             }
-
             composable("detail/{tribeId}") { backStackEntry ->
                 val tribeId = backStackEntry.arguments?.getString("tribeId")?.toIntOrNull()
 
@@ -141,7 +138,10 @@ fun ComposeApp() {
                     if (tribe != null) {
                         TribeDetailScreen(tribe)
                     } else {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
                             Text("Cargando tribu...", color = WhitePost)
                         }
                     }
@@ -151,13 +151,14 @@ fun ComposeApp() {
                     }
                 }
             }
-
-
             composable(route = "Buscar") {
                 SearchScreen()
             }
             composable(route = "Crear") {
-                CreateTribe("Crear Tribu", remember { mutableStateOf("") }, remember { mutableStateOf("") })
+                CreateTribe(
+                    Title = "Crear Tribu",
+                    viewModel = viewModel
+                )
             }
             composable(route = "Tribus") {
                 MyDataScreen()
@@ -174,18 +175,23 @@ fun ComposeApp() {
         }
     }
 
-    val currentAnimatedPos = animateFloatAsState(targetValue = (6 + (spaceBetweenNavBarItems.value*routes.indexOfFirst { it.name == navController.currentBackStackEntry?.destination?.route!! })).toFloat(), label = "Animación de menú")
+    val currentAnimatedPos = animateFloatAsState(
+        targetValue = (6 + (spaceBetweenNavBarItems.value * routes.indexOfFirst { it.name == navController.currentBackStackEntry?.destination?.route!! })).toFloat(),
+        label = "Animación de menú"
+    )
 
     if (routes[routes.indexOfFirst { it.name == navController.currentBackStackEntry?.destination?.route!! }].showMenu) {
-        Box(modifier = Modifier.fillMaxSize()){
-            Row(modifier = Modifier
-                .clip(shape = RoundedCornerShape(20.dp, 20.dp))
-                .background(BluePost)
-                .padding(top = 15.dp, bottom = 35.dp)
-                .fillMaxWidth()
-                .align(alignment = Alignment.BottomCenter)) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Row(
+                modifier = Modifier
+                    .clip(shape = RoundedCornerShape(20.dp, 20.dp))
+                    .background(BluePost)
+                    .padding(top = 15.dp, bottom = 35.dp)
+                    .fillMaxWidth()
+                    .align(alignment = Alignment.BottomCenter)
+            ) {
                 routes.forEachIndexed { index, item ->
-                    if(item.showInMenu) {
+                    if (item.showInMenu) {
                         val interactionSource = remember { MutableInteractionSource() }
                         Column(
                             modifier = Modifier
@@ -228,36 +234,41 @@ fun ComposeApp() {
                                 }
 
                             }
-                            Spacer(modifier = Modifier
-                                .height(20 .dp))
+                            Spacer(
+                                modifier = Modifier
+                                    .height(20.dp)
+                            )
 
                         }
                     }
                 }
             }
-            Box(modifier = Modifier.align(alignment = Alignment.BottomCenter)){
-                Row (modifier = Modifier
-                    .padding(top = 15.dp, bottom = 35.dp)
-                    .fillMaxWidth()
-                    .align(alignment = Alignment.BottomCenter)){
-                    Box(modifier = Modifier
-                        .absoluteOffset(x = (currentAnimatedPos.value).toInt().dp)
-                        .shadow(10.dp)
-                        .width(70.dp)
-                        .height(75.dp)
+            Box(modifier = Modifier.align(alignment = Alignment.BottomCenter)) {
+                Row(
+                    modifier = Modifier
+                        .padding(top = 15.dp, bottom = 35.dp)
                         .fillMaxWidth()
-                        .clip(
-                            shape = RoundedCornerShape(15.dp)
-                        )
-                        .background(Color.White)
+                        .align(alignment = Alignment.BottomCenter)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .absoluteOffset(x = (currentAnimatedPos.value).toInt().dp)
+                            .shadow(10.dp)
+                            .width(70.dp)
+                            .height(75.dp)
+                            .fillMaxWidth()
+                            .clip(
+                                shape = RoundedCornerShape(15.dp)
+                            )
+                            .background(Color.White)
 
-                    ){
+                    ) {
                         Row() {
                             Column(
                                 Modifier
                                     .weight(weight = 1f)
-                                    .padding(top = 10.dp)
-                                , horizontalAlignment = Alignment.CenterHorizontally
+                                    .padding(top = 10.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
 
                             ) {
                                 Icon(
@@ -269,7 +280,7 @@ fun ComposeApp() {
 
                                 Text(
                                     text = navController.currentBackStackEntry?.destination?.route!!,
-                                    color =  BlackPost,
+                                    color = BlackPost,
                                     fontSize = 13.sp,
                                     modifier = Modifier.padding(top = 5.dp)
                                 )

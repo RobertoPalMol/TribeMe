@@ -44,8 +44,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -53,11 +51,14 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
 import com.canhub.cropper.CropImageView
+import com.robpalmol.tribeme.DataBase.Models.CreateTribeRequest
 import com.robpalmol.tribeme.R
+import com.robpalmol.tribeme.ViewModels.MyViewModel
 import com.robpalmol.tribeme.ui.theme.BlackPost
 import com.robpalmol.tribeme.ui.theme.BluePost
 import com.robpalmol.tribeme.ui.theme.GrayLetter
@@ -304,12 +305,9 @@ fun MaxMembers(members: MutableState<Int>) {
 }
 
 
-
-
-
 @Composable
 fun CategoriasCarrusel(
-    selectedCategories: MutableState<Set<String>>, // Cambiado a Set para manejar la selección de forma más robusta.
+    selectedCategories: MutableState<List<String>>, // Cambiado a Set para manejar la selección de forma más robusta.
     onCategorySelect: (Set<String>) -> Unit
 ) {
     Spacer(modifier = Modifier.height(30.dp))
@@ -342,7 +340,7 @@ fun CategoriasCarrusel(
                         selectedCategories.value + categoryName
                     }
                     // Notificar al padre sobre el cambio
-                    onCategorySelect(selectedCategories.value)
+                    onCategorySelect(selectedCategories.value.toSet())
                 },
                 name = categoryName
             )
@@ -553,105 +551,57 @@ fun BooleanTribe(text: String, private: MutableState<Boolean>) {
     }
 }
 
-
-
-
 @Composable
 fun SaveElement(
     name: MutableState<String>,
     description: MutableState<String>,
-    selectedCategories: MutableState<Set<String>>, // This variable can be empty
-    autorName: MutableState<String>,
-    autorId: MutableState<String>,
-    imageUrl: MutableState<String>, // This variable can be empty
-    dateError: MutableState<Boolean>
+    imageUrl: MutableState<String>,
+    selectedCategories: MutableState<List<String>>,
+    private: MutableState<Boolean>,
+    members: MutableState<Int>,
+    dateError: MutableState<Boolean>,
+    context: Context,
+    viewModel: MyViewModel
 ) {
-    val context = LocalContext.current
-    Spacer(modifier = Modifier.height(20.dp))
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-
+    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         Button(
             onClick = {
-                if (!dateError.value) {
-                    Log.d("SaveElement", "Botón clicado")
+                Log.d("SaveElement", "Botón presionado")
 
-                    if (imageUrl.value.isNotEmpty()) {
-                        val fileName = "${System.currentTimeMillis()}.jpeg"
-
-
-                    } else {
-                        // Si no hay imagen, guardamos el evento sin la URL de la imagen
-                        saveEvent(
-                            name,
-                            description,
-                            selectedCategories,
-                            autorName,
-                            autorId,
-                            "",
-                            context
-                        )
-                    }
+                if (name.value.isBlank() || description.value.isBlank() || members.value <= 0) {
+                    Log.d("SaveElement", "Validación fallida: Campos vacíos")
+                    dateError.value = true
+                    return@Button
                 }
-            },
-            modifier = Modifier
-                .width(275.dp)
-                .align(Alignment.CenterVertically),
-            enabled = !dateError.value,
-            colors = ButtonDefaults.buttonColors(containerColor = BluePost)
-        ) {
-            Text(
-                text = "Empezar como Tribu",
-                fontSize = 24.sp,
-                color = WhitePost,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .padding(vertical = 8.dp)
-                    .drawBehind {
-                        if (dateError.value) { // Dibujar línea tachada si hay error
-                            val textWidth = size.width
-                            val textHeight = size.height
-                            drawLine(
-                                color = Color.Red,
-                                start = Offset(0f, textHeight / 2),
-                                end = Offset(textWidth, textHeight / 2),
-                                strokeWidth = 4f
-                            )
-                        }
-                    }
-            )
-        }
 
+
+                val createRequest = CreateTribeRequest(
+                    nombre = name.value,
+                    descripcion = description.value,
+                    categorias = selectedCategories.value,
+                    imagenUrl = imageUrl.value,
+                    numeroMaximoMiembros = members.value.takeIf { it > 0 } ?: 10,
+                    esPrivada = private.value
+                )
+
+                Log.d("SaveElement", "Request construido: $createRequest")
+                Log.d("SaveElement", "Datos enviados: nombre = ${name.value}, descripcion = ${description.value}, categorias = ${selectedCategories.value}, miembros = ${members.value}, esPrivada = ${private.value}")
+
+
+                viewModel.createTribe(
+                    context = context,
+                    createRequest = createRequest,
+                    onSuccess = {
+                        Log.d("SaveElement", "Tribu creada con éxito")
+                    },
+                    onError = {
+                        Log.e("SaveElement", "Error al crear tribu: $it")
+                    }
+                )
+            },
+            modifier = Modifier.padding(top = 16.dp)
+        ) {
+            Text("Crear Tribu", color = Color.White)
+        }
     }
 }
-
-// Función para guardar el evento
-fun saveEvent(
-    name: MutableState<String>,
-    description: MutableState<String>,
-    selectedCategories: MutableState<Set<String>>, // This variable can be empty
-    autorName: MutableState<String>,
-    autorId: MutableState<String>,
-    imageUrl: String,// This variable can be empty
-    context: Context
-) {
-    Toast.makeText(
-        context,
-        "Publicando Evento (esta acción puede tardar unos instantes)",
-        Toast.LENGTH_SHORT
-    ).show()
-
-    Log.d("SaveElement", "Evento a guardar")
-
-}
-
-
-
-
-
-
-

@@ -1,6 +1,5 @@
 package com.robpalmol.tribeme.Components
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -64,7 +63,7 @@ fun TribeElement(tribe: Tribe, onClick: () -> Unit) {
                     style = TextStyle(fontWeight = Bold)
                 )
                 Text(
-                    text = "@${tribe.tribuCreador.nombre}",
+                    text = "@${tribe.nombre}",
                     color = BluePost,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
@@ -101,9 +100,7 @@ fun TribeElement(tribe: Tribe, onClick: () -> Unit) {
 
                         Spacer(modifier = Modifier.weight(1f))
 
-                        Text(
-                            text = "Participantes: ${tribe.miembros?.size ?: 0}/${tribe.usuariosMaximos}"
-                        )
+                        Text(text = "Participantes: ?/${tribe.numeroMaximoMiembros}")
 
                         Spacer(modifier = Modifier.weight(1f))
 
@@ -214,7 +211,7 @@ fun TribeDetailScreen(tribe: Tribe) {
                         style = TextStyle(fontWeight = Bold)
                     )
                     Text(
-                        text = "@${tribe.tribuCreador.nombre}",
+                        text = "@${tribe.autorNombre}",
                         color = BluePost,
                         modifier = Modifier
                             .align(Alignment.TopEnd)
@@ -252,9 +249,7 @@ fun TribeDetailScreen(tribe: Tribe) {
 
                             Spacer(modifier = Modifier.weight(0.5f))
 
-                            Text(
-                                text = "Participantes: ${tribe.miembros?.size ?: 0}/${tribe.usuariosMaximos}"
-                            )
+                            Text(text = "Participantes: ?/${tribe.numeroMaximoMiembros}")
 
                             Spacer(modifier = Modifier.weight(0.5f))
 
