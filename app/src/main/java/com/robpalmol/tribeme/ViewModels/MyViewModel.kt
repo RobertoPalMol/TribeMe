@@ -9,6 +9,8 @@ import com.robpalmol.tribeme.DataBase.Models.Tribe
 import com.robpalmol.tribeme.DataBase.Models.TribuDTO
 import com.robpalmol.tribeme.DataBase.Models.User
 import com.robpalmol.tribeme.DataBase.RetrofitInstance
+import com.robpalmol.tribeme.util.JwtUtils
+import com.robpalmol.tribeme.util.SessionManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -20,6 +22,8 @@ class MyViewModel : ViewModel() {
     private val _tribeData = MutableStateFlow<List<Tribe>>(emptyList())
     val tribeData: StateFlow<List<Tribe>> = _tribeData
 
+    private val _currentUser = MutableStateFlow<User?>(null)
+    val currentUser: StateFlow<User?> = _currentUser
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
@@ -84,6 +88,27 @@ class MyViewModel : ViewModel() {
                 onError(errorMsg)
                 Log.e("MyViewModel", errorMsg, e)
             }
+        }
+    }
+    fun loadCurrentUser(context: Context) {
+        val token = SessionManager(context).getToken()
+        if (!token.isNullOrEmpty()) {
+            try {
+                val user = JwtUtils.decodeToken(token)
+                _currentUser.value = user
+            } catch (e: Exception) {
+                _error.value = "Error al cargar el usuario: ${e.localizedMessage}"
+                Log.e("MyViewModel", "Error al decodificar el token: ${e.localizedMessage}", e)
+            }
+        } else {
+            _error.value = "No se encontró el token"
+            Log.e("MyViewModel", "Token no encontrado")
+        }
+    }
+    fun getUserTribes() {
+        val userId = _currentUser.value?.usuarioId
+        if (userId != null) {
+            _tribeData.value = _tribeData.value.filter { it.autorId == userId.toString() }
         }
     }
 }

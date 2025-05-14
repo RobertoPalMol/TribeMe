@@ -180,7 +180,7 @@ fun UserMailName(mailname: MutableState<String>) {
                     ,
                     modifier = Modifier
                         .height(60.dp)
-                        .horizontalScroll(rememberScrollState())//improve el scroll
+                        .horizontalScroll(rememberScrollState())
                 )
             }
         }

@@ -49,6 +49,7 @@ import com.robpalmol.tribeme.Screens.CreateTribe
 import com.robpalmol.tribeme.Screens.HomeScreen
 import com.robpalmol.tribeme.Screens.LogIn
 import com.robpalmol.tribeme.Screens.MyDataScreen
+import com.robpalmol.tribeme.Screens.ProfileScreen
 import com.robpalmol.tribeme.Screens.Register
 import com.robpalmol.tribeme.Screens.SearchScreen
 import com.robpalmol.tribeme.ViewModels.LoginViewModel
@@ -136,7 +137,7 @@ fun ComposeApp() {
                     val tribe = viewModel.getTribeById(tribeId)
 
                     if (tribe != null) {
-                        TribeDetailScreen(tribe)
+                        TribeDetailScreen(tribe, viewModel)
                     } else {
                         Box(
                             modifier = Modifier.fillMaxSize(),
@@ -164,7 +165,7 @@ fun ComposeApp() {
                 MyDataScreen()
             }
             composable(route = "Usuario") {
-                LogIn(navController)
+                ProfileScreen(navController, viewModel)
             }
             composable(route = "Login") {
                 LogIn(navController)

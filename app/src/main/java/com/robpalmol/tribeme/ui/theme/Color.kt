@@ -18,6 +18,7 @@ val GrayCategory = Color(214, 214, 214)
 val GreenBackground = Color(79, 220, 153)
 val GrayLetter = Color(3, 2, 41)
 val BlueBackground = Color(135, 206, 235)
+val PinkPost = Color(255, 192, 203 )
 
 val DifuminatedBackground = listOf(
     GreenBackground,

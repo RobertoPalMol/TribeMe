@@ -19,31 +19,34 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.robpalmol.tribeme.DataBase.Models.Tribe
 import com.robpalmol.tribeme.R
+import com.robpalmol.tribeme.ViewModels.MyViewModel
 import com.robpalmol.tribeme.ui.theme.BlackPost
 import com.robpalmol.tribeme.ui.theme.BluePost
 import com.robpalmol.tribeme.ui.theme.DifuminatedBackground
 import com.robpalmol.tribeme.ui.theme.GrayCategory
+import com.robpalmol.tribeme.ui.theme.PinkPost
 import com.robpalmol.tribeme.ui.theme.WhitePost
 
 
 @Composable
 fun TribeElement(tribe: Tribe, onClick: () -> Unit) {
-    val categories = listOf("Deportes", "Estilo de vida", "Música")
-
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -112,7 +115,7 @@ fun TribeElement(tribe: Tribe, onClick: () -> Unit) {
                         Spacer(modifier = Modifier.weight(0.5f))
 
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            items(categories) { category ->
+                            items(tribe.categorias) { category ->
                                 PostCategory(category = category)
                             }
                         }
@@ -120,6 +123,7 @@ fun TribeElement(tribe: Tribe, onClick: () -> Unit) {
                 }
             }
         }
+
     }
 }
 
@@ -148,7 +152,6 @@ fun PostCategory(category: String) {
             }
         }
 
-
         Image(
             painter = iconPainter,
             contentDescription = category,
@@ -168,7 +171,8 @@ fun PostCategory(category: String) {
 
 
 @Composable
-fun TribeDetailScreen(tribe: Tribe) {
+fun TribeDetailScreen(tribe: Tribe, viewModel: MyViewModel) {
+    val currentUser by viewModel.currentUser.collectAsState()
 
     Column(
         modifier = Modifier
@@ -177,105 +181,143 @@ fun TribeDetailScreen(tribe: Tribe) {
     ) {
         Spacer(modifier = Modifier.height(40.dp))
 
-        Row {
-            Spacer(modifier = Modifier.width(20.dp))
+        Row(modifier = Modifier.padding(horizontal = 20.dp)) {
             Text(
-                text = "Eulalia",
+                text = currentUser?.nombre ?: "usuario",
                 color = Color.White,
-                style = TextStyle(
-                    fontSize = 32.sp
-                )
+                fontSize = 26.sp,
+                fontWeight = FontWeight.SemiBold
             )
         }
-        Spacer(modifier = Modifier.height(10.dp))
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .clip(shape = RoundedCornerShape(20.dp, 20.dp))
+                .clip(RoundedCornerShape(24.dp))
                 .background(Brush.verticalGradient(DifuminatedBackground))
+                .padding(16.dp)
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(25.dp)
+                    .fillMaxWidth()
                     .background(WhitePost, shape = RoundedCornerShape(20.dp))
+                    .padding(20.dp)
             ) {
-                Spacer(modifier = Modifier.height(20.dp))
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(5.dp)
+                // Nombre y autor
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        tribe.nombre,
-                        style = TextStyle(fontWeight = Bold)
+                        text = tribe.nombre,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = BlackPost
                     )
                     Text(
                         text = "@${tribe.autorNombre}",
                         color = BluePost,
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
+                        fontSize = 14.sp
                     )
                 }
-                Box(modifier = Modifier.fillMaxWidth()
-                    .height(300.dp)) {
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(8.dp)
-                        ) {
-                            Spacer(modifier = Modifier.weight(1f))
-                            Box(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .height(200.dp)
-                                    .background(BlackPost, shape = RoundedCornerShape(20.dp))
-                            )
-                        }
 
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(8.dp)
-                        ) {
-                            Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                            Text(
-                                text = tribe.descripcion,
-                                maxLines = 5,
-                                overflow = TextOverflow.Ellipsis
-                            )
+                // Imagen o placeholder
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(BlackPost)
+                )
 
-                            Spacer(modifier = Modifier.weight(0.5f))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                            Text(text = "Participantes: ?/${tribe.numeroMaximoMiembros}")
+                // Descripción
+                Text(
+                    text = tribe.descripcion,
+                    fontSize = 14.sp,
+                    maxLines = 4,
+                    overflow = TextOverflow.Ellipsis,
+                    color = BlackPost
+                )
 
-                            Spacer(modifier = Modifier.weight(0.5f))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                            Text(
-                                text = "Categorías:",
-                                style = TextStyle(fontWeight = Bold)
-                            )
+                // Participantes
+                Text(
+                    text = "Participantes: ?/${tribe.numeroMaximoMiembros}",
+                    fontSize = 14.sp,
+                    color = BlackPost
+                )
 
-                            Spacer(modifier = Modifier.weight(0.25f))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                items(
-                                    listOf(
-                                        "Deportes",
-                                        "Estilo de vida",
-                                        "Música"
-                                    )
-                                ) { category ->
-                                    PostCategory(category = category)
-                                }
-                            }
-                        }
+                // Categorías
+                Text(
+                    text = "Categorías",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    color = BlackPost
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(tribe.categorias) { category ->
+                        PostCategory(category = category)
                     }
                 }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Tablón de eventos
+                TribeEventDetails()
             }
         }
     }
 }
 
+
+@Composable
+fun TribeEventDetails() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .background(GrayCategory),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "Tablón de anuncios",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = WhitePost
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(elevation = 4.dp, shape = RoundedCornerShape(12.dp))
+                .background(color = WhitePost, shape = RoundedCornerShape(12.dp))
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier
+                    .background(PinkPost, shape = RoundedCornerShape(8.dp))
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    text = "Eventos Programados",
+                    fontWeight = FontWeight.Medium,
+                    color = WhitePost
+                )
+            }
+        }
+    }
+}

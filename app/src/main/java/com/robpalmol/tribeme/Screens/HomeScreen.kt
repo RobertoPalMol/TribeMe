@@ -41,9 +41,11 @@ fun HomeScreen(
 
     // Estado reactivo que renderiza la lista
     val tribeList by viewModel.tribeData.collectAsState(initial = emptyList())
+    val currentUser by viewModel.currentUser.collectAsState()
 
     // Efecto que dispara la llamada al backend
     LaunchedEffect(reloadKey) {
+        viewModel.loadCurrentUser(context)
         viewModel.getAllTribes(context)
     }
 
@@ -56,7 +58,7 @@ fun HomeScreen(
         Row {
             Spacer(modifier = Modifier.width(20.dp))
             Text(
-                text = "Bienvenido",
+                text = currentUser?.nombre ?: "Bienvenido",
                 color = Color.White,
                 fontSize = 32.sp
             )
@@ -74,6 +76,8 @@ fun HomeScreen(
             items(tribeList) { tribe ->
                 TribeElement(tribe = tribe, onClick = { onItemClick(tribe) })
             }
+
+            item { Spacer(modifier = Modifier.height(120.dp)) }
         }
     }
 }

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -47,7 +48,6 @@ import com.robpalmol.tribeme.ui.theme.WhitePost
 @Composable
 fun YourPostElement(onDeleteClick: () -> Unit, navController: NavController) {
     var showDialog by remember { mutableStateOf(false) }
-    var autorID:MutableState<String>
     var event by remember { mutableStateOf("Event") }
     Column(
         modifier = Modifier
@@ -79,13 +79,11 @@ fun YourPostElement(onDeleteClick: () -> Unit, navController: NavController) {
                 .height(10.dp)
         )
         Row {
-            //PostPhoto(imageUrl = event.imageUrl)
             Spacer(
                 modifier = Modifier
                     .width(20.dp)
             )
             Column {
-                //PostText()
             }
         }
         Spacer(
@@ -103,13 +101,6 @@ fun YourPostElement(onDeleteClick: () -> Unit, navController: NavController) {
                         .width(10.dp)
                 )
             }
-            /*
-            items(event.categories) { category ->
-                PostCategory(category)
-            }
-
-             */
-
         }
         Spacer(modifier = Modifier.height(20.dp))
         Row(
@@ -182,7 +173,7 @@ fun ActiveElements() {
         ) {
             Spacer(modifier = Modifier.width(10.dp))
             Text(
-                text = "Tus eventos activos",
+                text = "Tus tribus activas",
                 fontSize = 22.sp,
                 color = WhitePost
             )
@@ -248,11 +239,9 @@ fun DeletePoppup(NoClick: () -> Unit) {
 @Composable
 fun CloseSesion(
     navController: NavController,
-    name: MutableState<String>
 ){
     Button(
         onClick = {
-            name.value = ""
             navController.navigate("Login") {
                 popUpTo(navController.graph.findStartDestination().id) {
                     inclusive = true
@@ -269,3 +258,4 @@ fun CloseSesion(
         )
     }
 }
+
