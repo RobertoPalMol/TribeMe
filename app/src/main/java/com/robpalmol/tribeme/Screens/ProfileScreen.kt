@@ -1,6 +1,7 @@
 package com.robpalmol.tribeme.Screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -8,8 +9,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +24,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -35,11 +40,11 @@ fun ProfileScreen(
     viewModel: MyViewModel
 ) {
     // Obtener tribus y usuario actual desde el ViewModel
-    val user = viewModel.currentUser.collectAsState().value
+    val currentUser = viewModel.currentUser.collectAsState().value
     val tribes = viewModel.tribeData.collectAsState().value
 
     // Filtrar las tribus creadas por el usuario actual
-    val userTribes = tribes.filter { it.autorId == user?.usuarioId.toString() }
+    val userTribes = tribes.filter { it.autorId == currentUser?.usuarioId.toString() }
 
     Column(
         modifier = Modifier
@@ -48,15 +53,29 @@ fun ProfileScreen(
     ) {
         Spacer(modifier = Modifier.height(40.dp))
 
-        // Mostrar el nombre del usuario logueado
-        if (user != null) {
-            Row(modifier = Modifier.padding(start = 20.dp)) {
+        Row {
+            Spacer(modifier = Modifier.width(20.dp))
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(Color.LightGray),
+                contentAlignment = Alignment.Center
+            ) {
+                // AsyncImage(model = user.avatarUrl, contentDescription = null)
                 Text(
-                    text = user.nombre,
+                    text = currentUser?.nombre?.firstOrNull()?.uppercase() ?: "",
                     color = Color.White,
-                    style = TextStyle(fontSize = 32.sp)
+                    fontSize = 20.sp,
+                    fontWeight = Bold
                 )
             }
+            Spacer(modifier = Modifier.width(20.dp))
+            Text(
+                text = currentUser?.nombre ?: "Bienvenido",
+                color = Color.White,
+                fontSize = 32.sp
+            )
         }
         Spacer(modifier = Modifier.height(40.dp))
 

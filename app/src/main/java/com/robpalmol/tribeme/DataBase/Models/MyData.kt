@@ -11,7 +11,8 @@ data class Tribe(
     val esPrivada: Boolean,
     val fechaCreacion: String,
     val autorId: String,
-    val autorNombre: String
+    val autorNombre: String,
+    val miembros: List<User>
 )
 data class TribuDTO(
     val nombre: String,
@@ -45,3 +46,15 @@ data class AuthResponse(
     val token: String,
     val user: User
 )
+
+data class EventoDTO(
+    val eventoId: Long,
+    val nombre: String,
+    val descripcion: String?,
+    val hora: String,
+    val lugar: String,
+    val fechaCreacion: String,
+    val fechaModificacion: String,
+    val creadorId: Long
+)
+

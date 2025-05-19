@@ -2,9 +2,11 @@ package com.robpalmol.tribeme.ViewModels
 
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.robpalmol.tribeme.DataBase.Models.CreateTribeRequest
+import com.robpalmol.tribeme.DataBase.Models.EventoDTO
 import com.robpalmol.tribeme.DataBase.Models.Tribe
 import com.robpalmol.tribeme.DataBase.Models.TribuDTO
 import com.robpalmol.tribeme.DataBase.Models.User
@@ -28,6 +30,9 @@ class MyViewModel : ViewModel() {
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
 
+    private val _eventos = MutableStateFlow<List<EventoDTO>>(emptyList())
+    val eventos: StateFlow<List<EventoDTO>> = _eventos
+
     fun getAllUsers(context: Context) {
         viewModelScope.launch {
             try {
@@ -44,6 +49,7 @@ class MyViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val tribes = RetrofitInstance.getApiService(context).getAllTribes()
+                Log.d("MyViewModel", tribes.toString())
                 _tribeData.value = tribes
             } catch (e: Exception) {
                 _error.value = "No se pudo obtener las tribus: ${e.localizedMessage}"
@@ -109,6 +115,49 @@ class MyViewModel : ViewModel() {
         val userId = _currentUser.value?.usuarioId
         if (userId != null) {
             _tribeData.value = _tribeData.value.filter { it.autorId == userId.toString() }
+        }
+    }
+
+    fun getAllEventos(context: Context) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitInstance.getApiService(context).getAllEventos()
+                _eventos.value = response
+            } catch (e: Exception) {
+                _error.value = "Error al obtener eventos: ${e.localizedMessage}"
+                Log.e("MyViewModelEvent", "Error en eventos", e)
+            }
+        }
+    }
+
+    fun unirseATribu(
+        context: Context,
+        tribuId: Long,
+        usuarioId: Long,
+        miembros: List<User>,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            val yaEsMiembro = miembros.any { it.usuarioId == usuarioId }
+
+            if (yaEsMiembro) {
+                Toast.makeText(context, "Ya perteneces a esta tribu", Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+
+            try {
+                val response = RetrofitInstance.getApiService(context).unirseATribu(tribuId, usuarioId)
+
+                if (response.isSuccessful) {
+                    Toast.makeText(context, "¡Te has unido a la tribu!", Toast.LENGTH_SHORT).show()
+                    onSuccess()
+                } else {
+                    onError("Error al unirse: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                onError("Error: ${e.localizedMessage}")
+            }
         }
     }
 }

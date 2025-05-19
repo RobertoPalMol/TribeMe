@@ -1,5 +1,8 @@
 package com.robpalmol.tribeme.Components
 
+import android.content.Context
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,9 +19,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -27,6 +36,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -34,7 +44,9 @@ import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.robpalmol.tribeme.DataBase.Models.EventoDTO
 import com.robpalmol.tribeme.DataBase.Models.Tribe
+import com.robpalmol.tribeme.DataBase.Models.User
 import com.robpalmol.tribeme.R
 import com.robpalmol.tribeme.ViewModels.MyViewModel
 import com.robpalmol.tribeme.ui.theme.BlackPost
@@ -66,7 +78,7 @@ fun TribeElement(tribe: Tribe, onClick: () -> Unit) {
                     style = TextStyle(fontWeight = Bold)
                 )
                 Text(
-                    text = "@${tribe.nombre}",
+                    text = "@${tribe.autorNombre}",
                     color = BluePost,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
@@ -103,7 +115,7 @@ fun TribeElement(tribe: Tribe, onClick: () -> Unit) {
 
                         Spacer(modifier = Modifier.weight(1f))
 
-                        Text(text = "Participantes: ?/${tribe.numeroMaximoMiembros}")
+                        Text(text = "Participantes: ${tribe.miembros?.size}/${tribe.numeroMaximoMiembros}")
 
                         Spacer(modifier = Modifier.weight(1f))
 
@@ -160,7 +172,6 @@ fun PostCategory(category: String) {
 
         Spacer(modifier = Modifier.width(4.dp))
 
-        // Mostrar el texto de la categoría
         Text(
             text = category,
             fontSize = 12.sp,
@@ -173,6 +184,12 @@ fun PostCategory(category: String) {
 @Composable
 fun TribeDetailScreen(tribe: Tribe, viewModel: MyViewModel) {
     val currentUser by viewModel.currentUser.collectAsState()
+    val eventos by viewModel.eventos.collectAsState()
+    val context = LocalContext.current
+
+    LaunchedEffect(tribe.tribuId) {
+        viewModel.getAllEventos(context)
+    }
 
     Column(
         modifier = Modifier
@@ -213,7 +230,7 @@ fun TribeDetailScreen(tribe: Tribe, viewModel: MyViewModel) {
                     Text(
                         text = tribe.nombre,
                         fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = Bold,
                         color = BlackPost
                     )
                     Text(
@@ -249,7 +266,7 @@ fun TribeDetailScreen(tribe: Tribe, viewModel: MyViewModel) {
 
                 // Participantes
                 Text(
-                    text = "Participantes: ?/${tribe.numeroMaximoMiembros}",
+                    text = "Participantes: ${tribe.miembros?.size}/${tribe.numeroMaximoMiembros}",
                     fontSize = 14.sp,
                     color = BlackPost
                 )
@@ -272,8 +289,90 @@ fun TribeDetailScreen(tribe: Tribe, viewModel: MyViewModel) {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Tablón de eventos
-                TribeEventDetails()
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(elevation = 4.dp, shape = RoundedCornerShape(12.dp))
+                        .background(color = GrayCategory, shape = RoundedCornerShape(12.dp))
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .background(PinkPost, shape = RoundedCornerShape(8.dp))
+                    ) {
+                        Text(text = "Eventos programados:", fontWeight = Bold, color = BlackPost)
+                    }
+
+                    // Tablón de eventos
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        items(eventos) { evento ->
+                            Log.d("TribeDetailScreen", "Evento: $evento")
+                            TribeEventDetails(evento = evento)
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(elevation = 4.dp, shape = RoundedCornerShape(12.dp))
+                        .background(color = GrayCategory, shape = RoundedCornerShape(12.dp))
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.Center
+                ) {
+
+                    Text(text = "Lista de participantes:", fontWeight = Bold, color = BlackPost)
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    //Lista de participantes de la tribu
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+
+                        Log.d("TribeDetailScreen", "Participantes: ${tribe.miembros}")
+
+                        items(tribe.miembros.orEmpty()) { miembro ->
+                            Log.d("TribeDetailScreen", "Participantes: $miembro")
+                            TribeMemberItem(user = miembro, tribe = tribe)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+
+                    //boton de unirse a la tribu
+                    currentUser?.let { user ->
+                        val yaEsMiembro = tribe.miembros.any { it.usuarioId == user.usuarioId }
+
+                        Log.d("DEBUG", "Miembros tribu: ${tribe.miembros.map { it.usuarioId }}")
+                        Log.d("DEBUG", "Usuario actual ID: ${user.usuarioId}")
+                        Log.d("DEBUG", "Ya es miembro? $yaEsMiembro")
+                        UnirseTribuButton(
+                            context = context,
+                            viewModel = viewModel,
+                            tribu = tribe,
+                            usuarioActual = user,
+                            miembros = tribe.miembros
+                        )
+                        if (!yaEsMiembro) {
+                            UnirseTribuButton(
+                                context = context,
+                                viewModel = viewModel,
+                                tribu = tribe,
+                                usuarioActual = user,
+                                miembros = tribe.miembros
+                            )
+                        } else {
+                            Text(
+                                text = "Ya eres miembro de esta tribu",
+                                modifier = Modifier.padding(16.dp),
+                                color = Color.Gray
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -281,43 +380,101 @@ fun TribeDetailScreen(tribe: Tribe, viewModel: MyViewModel) {
 
 
 @Composable
-fun TribeEventDetails() {
+fun TribeEventDetails(evento: EventoDTO) {
+
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .background(GrayCategory),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+            .fillMaxWidth()
+            .background(WhitePost, shape = RoundedCornerShape(8.dp))
+            .padding(horizontal = 12.dp, vertical = 8.dp)
     ) {
-        Text(
-            text = "Tablón de anuncios",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = WhitePost
-        )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(text = evento.nombre, color = BlackPost)
+        Text(text = "🕒 ${evento.hora}", color = BlackPost)
+        Text(text = "📍 ${evento.lugar}", color = BlackPost)
+    }
+}
 
+@Composable
+fun TribeMemberItem(user: User, tribe: Tribe) {
+    val isAuthor = user.usuarioId.toString() == tribe.autorId
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp, horizontal = 16.dp),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF8F8F8))
+    ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .shadow(elevation = 4.dp, shape = RoundedCornerShape(12.dp))
-                .background(color = WhitePost, shape = RoundedCornerShape(12.dp))
-                .padding(16.dp),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
+
+            Box(
                 modifier = Modifier
-                    .background(PinkPost, shape = RoundedCornerShape(8.dp))
-                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(Color.LightGray),
+                contentAlignment = Alignment.Center
             ) {
+                // AsyncImage(model = user.avatarUrl, contentDescription = null)
                 Text(
-                    text = "Eventos Programados",
-                    fontWeight = FontWeight.Medium,
-                    color = WhitePost
+                    text = user.nombre.firstOrNull()?.uppercase() ?: "",
+                    color = Color.White,
+                    fontSize = 20.sp,
+                    fontWeight = Bold
                 )
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = user.nombre,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF333333)
+                )
+
+                if (isAuthor) {
+                    Text(
+                        text = "Creador de la tribu",
+                        fontSize = 14.sp,
+                        color = Color(0xFF00796B),
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
         }
     }
 }
+
+@Composable
+fun UnirseTribuButton(
+    context: Context,
+    viewModel: MyViewModel,
+    tribu: Tribe,
+    usuarioActual: User,
+    miembros: List<User>
+) {
+    Button(onClick = {
+        viewModel.unirseATribu(
+            context = context,
+            tribuId = tribu.tribuId,
+            usuarioId = usuarioActual.usuarioId,
+            miembros = miembros,
+            onSuccess = {
+            },
+            onError = { msg ->
+                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            }
+        )
+    }) {
+        Text(text = "Unirse a la tribu")
+    }
+}
+
