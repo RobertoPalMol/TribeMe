@@ -115,7 +115,7 @@ fun Password(
         }
     }
 }
-
+/*
 @Composable
 fun PasswordForgoten() {
     Row(
@@ -136,6 +136,7 @@ fun PasswordForgoten() {
         )
     }
 }
+ */
 
 @Composable
 fun UserMailName(mailname: MutableState<String>) {
@@ -160,7 +161,7 @@ fun UserMailName(mailname: MutableState<String>) {
                     onValueChange = { mailname.value = it },
                     label = {
                         Text(
-                            "Correo o nombre de usuario",
+                            "Correo del usuario",
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -207,7 +208,8 @@ fun UserMailDirection(mail: MutableState<String>) {
                     label = {
                         Text(
                             "Dirección de correo electrónico",
-                            fontSize = 15.sp
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -249,7 +251,8 @@ fun UserName(name: MutableState<String>) {
                     label = {
                         Text(
                             "Nombre de usuario",
-                            fontSize = 15.sp
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),

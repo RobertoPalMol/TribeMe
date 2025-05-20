@@ -31,7 +31,6 @@ import androidx.navigation.NavHostController
 import com.robpalmol.tribeme.Components.CreateSesion
 import com.robpalmol.tribeme.Components.NoAccount
 import com.robpalmol.tribeme.Components.Password
-import com.robpalmol.tribeme.Components.PasswordForgoten
 import com.robpalmol.tribeme.Components.StartSesion
 import com.robpalmol.tribeme.Components.UserMailDirection
 import com.robpalmol.tribeme.Components.UserMailName
@@ -104,8 +103,8 @@ fun LogIn(navController: NavHostController, loginViewModel: LoginViewModel = vie
             Spacer(modifier = Modifier.height(20.dp))
             Password(password)
             Column {
-                PasswordForgoten()
-                Spacer(modifier = Modifier.height(5.dp))
+                //PasswordForgoten()
+                Spacer(modifier = Modifier.height(25.dp))
                 StartSesion(
                     text = "Iniciar sesión",
                     navHostController = navController,

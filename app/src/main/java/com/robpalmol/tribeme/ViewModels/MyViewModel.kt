@@ -80,7 +80,8 @@ class MyViewModel : ViewModel() {
                     numeroMaximoMiembros = createRequest.numeroMaximoMiembros,
                     esPrivada = createRequest.esPrivada,
                     categorias = createRequest.categorias,
-                    autorId = currentUser?.usuarioId ?: 0
+                    autorId = currentUser?.usuarioId ?: 0,
+                    ubicacion = createRequest.ubicacion
                 )
 
                 val createdTribe = RetrofitInstance.getApiService(context).crearTribu(tribuDTO)

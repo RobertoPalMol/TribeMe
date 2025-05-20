@@ -52,10 +52,10 @@ import com.robpalmol.tribeme.Screens.MyDataScreen
 import com.robpalmol.tribeme.Screens.ProfileScreen
 import com.robpalmol.tribeme.Screens.Register
 import com.robpalmol.tribeme.Screens.SearchScreen
-import com.robpalmol.tribeme.ViewModels.LoginViewModel
 import com.robpalmol.tribeme.ViewModels.MyViewModel
 import com.robpalmol.tribeme.ui.theme.BlackListOfBackground
 import com.robpalmol.tribeme.ui.theme.BlackPost
+import com.robpalmol.tribeme.ui.theme.BlueNavBar
 import com.robpalmol.tribeme.ui.theme.BluePost
 import com.robpalmol.tribeme.ui.theme.DifuminatedBackground
 import com.robpalmol.tribeme.ui.theme.WhitePost
@@ -186,7 +186,7 @@ fun ComposeApp() {
             Row(
                 modifier = Modifier
                     .clip(shape = RoundedCornerShape(20.dp, 20.dp))
-                    .background(BluePost)
+                    .background(BlueNavBar)
                     .padding(top = 15.dp, bottom = 35.dp)
                     .fillMaxWidth()
                     .align(alignment = Alignment.BottomCenter)
@@ -229,7 +229,7 @@ fun ComposeApp() {
                                             modifier = Modifier.size(28.dp),
                                             painter = painterResource(item.iconoDef!!),
                                             contentDescription = null,
-                                            tint = WhitePost
+                                            tint = BlackPost
                                         )
                                     }
                                 }
@@ -261,7 +261,7 @@ fun ComposeApp() {
                             .clip(
                                 shape = RoundedCornerShape(15.dp)
                             )
-                            .background(Color.White)
+                            .background(BluePost)
 
                     ) {
                         Row() {
@@ -275,13 +275,13 @@ fun ComposeApp() {
                                 Icon(
                                     modifier = Modifier.size(28.dp),
                                     painter = painterResource(routes[routes.indexOfFirst { it.name == navController.currentBackStackEntry?.destination?.route }].iconoSel!!),
-                                    contentDescription = null
-
+                                    contentDescription = null,
+                                    tint = WhitePost
                                 )
 
                                 Text(
                                     text = navController.currentBackStackEntry?.destination?.route!!,
-                                    color = BlackPost,
+                                    color = WhitePost,
                                     fontSize = 13.sp,
                                     modifier = Modifier.padding(top = 5.dp)
                                 )

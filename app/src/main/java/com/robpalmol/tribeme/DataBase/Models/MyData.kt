@@ -12,7 +12,8 @@ data class Tribe(
     val fechaCreacion: String,
     val autorId: String,
     val autorNombre: String,
-    val miembros: List<User>
+    val miembros: List<User>,
+    val ubicacion: String
 )
 data class TribuDTO(
     val nombre: String,
@@ -21,7 +22,8 @@ data class TribuDTO(
     val categorias: List<String>,
     val numeroMaximoMiembros: Int,
     val esPrivada: Boolean,
-    val autorId: Long
+    val autorId: Long,
+    val ubicacion: String
 )
 
 data class CreateTribeRequest(
@@ -30,7 +32,8 @@ data class CreateTribeRequest(
     val categorias: List<String>,
     val imagenUrl: String,
     val numeroMaximoMiembros: Int,
-    val esPrivada: Boolean
+    val esPrivada: Boolean,
+    val ubicacion: String
 )
 
 

@@ -33,6 +33,7 @@ import com.robpalmol.tribeme.Components.MaxMembers
 import com.robpalmol.tribeme.Components.SaveElement
 import com.robpalmol.tribeme.Components.TribeDescription
 import com.robpalmol.tribeme.Components.TribeName
+import com.robpalmol.tribeme.Components.Ubicacion
 import com.robpalmol.tribeme.ViewModels.MyViewModel
 import com.robpalmol.tribeme.ui.theme.BlackPost
 import com.robpalmol.tribeme.ui.theme.DifuminatedBackground
@@ -44,13 +45,14 @@ fun CreateTribe(
     Title: String,
     viewModel: MyViewModel
 ) {
-    val Name = rememberSaveable { mutableStateOf("") }
-    val Description = rememberSaveable { mutableStateOf("") }
+    val name = rememberSaveable { mutableStateOf("") }
+    val description = rememberSaveable { mutableStateOf("") }
     val members = rememberSaveable { mutableStateOf(0) }
     val selectedCategories = rememberSaveable { mutableStateOf(listOf<String>()) }
     val imageUrl = rememberSaveable { mutableStateOf("") }
     val private1 = remember { mutableStateOf(true) }
     val dateError = remember { mutableStateOf(false) }
+    val ubicacion = rememberSaveable { mutableStateOf("") }
 
 
     val context = LocalContext.current
@@ -79,8 +81,9 @@ fun CreateTribe(
                 .clip(RoundedCornerShape(20.dp))
                 .background(Brush.verticalGradient(DifuminatedBackground))
         ) {
-            item { TribeName(Name) }
-            item { TribeDescription(description = Description) }
+            item { TribeName(name) }
+            item { TribeDescription(description = description) }
+            item { Ubicacion(ubicacion) }
             item { MaxMembers(members = members) }
             item {
                 CategoriasCarrusel(
@@ -95,15 +98,16 @@ fun CreateTribe(
             item { BooleanTribe("Los miembros podrán crear eventos", remember { mutableStateOf(true) }) }
             item {
                 SaveElement(
-                    name = Name,
-                    description = Description,
+                    name = name,
+                    description = description,
                     imageUrl = imageUrl,
                     selectedCategories = selectedCategories,
                     private = private1,
                     members = members,
                     dateError = dateError,
                     context = context,
-                    viewModel = viewModel
+                    viewModel = viewModel,
+                    ubicacion = ubicacion
                 )
             }
             item { Spacer(modifier = Modifier.height(120.dp)) }

@@ -72,18 +72,27 @@ fun TribeElement(tribe: Tribe, onClick: () -> Unit) {
                 .fillMaxSize()
                 .padding(10.dp)
         ) {
+            Spacer(modifier = Modifier.width(25.dp))
+
             Box(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     tribe.nombre,
-                    style = TextStyle(fontWeight = Bold)
+                    style = TextStyle(fontWeight = Bold),
+                    fontSize = 24.sp
                 )
                 Text(
                     text = "@${tribe.autorNombre}",
                     color = BluePost,
                     modifier = Modifier
-                        .align(Alignment.TopEnd)
+                        .align(Alignment.TopEnd),
+                    fontSize = 24.sp
                 )
             }
+            Text(
+                text = tribe.ubicacion,
+                color = BlackPost,
+                fontSize = 16.sp
+            )
             Box(modifier = Modifier.fillMaxWidth()) {
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Column(
@@ -236,12 +245,17 @@ fun TribeDetailScreen(tribe: Tribe, viewModel: MyViewModel) {
                     Text(
                         text = "@${tribe.autorNombre}",
                         color = BluePost,
-                        fontSize = 14.sp
+                        fontSize = 22.sp
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
-
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = tribe.ubicacion,
+                    color = BlackPost,
+                    fontSize = 16.sp
+                )
+                Spacer(modifier = Modifier.height(10.dp))
                 // Imagen o placeholder
                 Box(
                     modifier = Modifier

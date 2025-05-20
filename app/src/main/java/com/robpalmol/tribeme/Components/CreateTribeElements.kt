@@ -552,6 +552,76 @@ fun BooleanTribe(text: String, private: MutableState<Boolean>) {
 }
 
 @Composable
+fun Ubicacion(ubicacion: MutableState<String>) {
+    val maxChar = 30
+    Spacer(
+        modifier = Modifier
+            .height(30.dp)
+    )
+    Row {
+        Spacer(
+            modifier = Modifier
+                .width(60.dp)
+        )
+        Text(
+            text = "Ubicación de la tribu",
+            style = TextStyle(
+                fontSize = 15.sp
+            )
+        )
+    }
+    Spacer(
+        modifier = Modifier
+            .height(10.dp)
+    )
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .background(WhitePost, shape = RoundedCornerShape(20.dp))
+                .padding(8.dp)
+                .size(300.dp, 75.dp)
+        ) {
+            Row {
+                TextField(
+                    value = ubicacion.value,
+                    onValueChange = { if (it.length <= maxChar) ubicacion.value = it },
+                    textStyle = TextStyle(BlackPost),
+                    colors = TextFieldDefaults.colors(
+                        cursorColor = BlackPost,
+                        disabledLabelColor = BlackPost,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedLabelColor = BlackPost,
+                        disabledContainerColor = WhitePost,
+                        unfocusedContainerColor = WhitePost,
+                        focusedContainerColor = WhitePost
+                    ),
+                    placeholder = {
+                        Text(
+                            text = "Ubicación de la Tribu",
+                            style = TextStyle(color = GrayLetter)
+                        )
+                    },
+                    modifier = Modifier
+                        .height(75.dp),
+                    supportingText = {
+                        Text(
+                            text = "${ubicacion.value.length} / $maxChar",
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.End,
+                        )
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
 fun SaveElement(
     name: MutableState<String>,
     description: MutableState<String>,
@@ -561,7 +631,8 @@ fun SaveElement(
     members: MutableState<Int>,
     dateError: MutableState<Boolean>,
     context: Context,
-    viewModel: MyViewModel
+    viewModel: MyViewModel,
+    ubicacion: MutableState<String>
 ) {
     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         Button(
@@ -581,11 +652,15 @@ fun SaveElement(
                     categorias = selectedCategories.value,
                     imagenUrl = imageUrl.value,
                     numeroMaximoMiembros = members.value.takeIf { it > 0 } ?: 10,
-                    esPrivada = private.value
+                    esPrivada = private.value,
+                    ubicacion = ubicacion.value
                 )
 
                 Log.d("SaveElement", "Request construido: $createRequest")
-                Log.d("SaveElement", "Datos enviados: nombre = ${name.value}, descripcion = ${description.value}, categorias = ${selectedCategories.value}, miembros = ${members.value}, esPrivada = ${private.value}")
+                Log.d(
+                    "SaveElement",
+                    "Datos enviados: nombre = ${name.value}, descripcion = ${description.value}, categorias = ${selectedCategories.value}, miembros = ${members.value}, esPrivada = ${private.value}"
+                )
 
 
                 viewModel.createTribe(
