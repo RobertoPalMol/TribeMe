@@ -391,8 +391,8 @@ fun TribeEventDetails(evento: EventoDTO) {
 
         Spacer(modifier = Modifier.height(4.dp))
         Text(text = evento.nombre, color = BlackPost)
-        Text(text = "🕒 ${evento.hora}", color = BlackPost)
-        Text(text = "📍 ${evento.lugar}", color = BlackPost)
+        Text(text = "Hora: ${evento.hora}", color = BlackPost)
+        Text(text = "Lugar: ${evento.lugar}", color = BlackPost)
     }
 }
 
