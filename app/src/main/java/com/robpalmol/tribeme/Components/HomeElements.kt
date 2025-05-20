@@ -17,12 +17,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
@@ -203,6 +205,7 @@ fun TribeDetailScreen(tribe: Tribe, viewModel: MyViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .background(BlackPost)
     ) {
         Spacer(modifier = Modifier.height(40.dp))
@@ -343,7 +346,8 @@ fun TribeDetailScreen(tribe: Tribe, viewModel: MyViewModel) {
                     Spacer(modifier = Modifier.height(8.dp))
 
                     //Lista de participantes de la tribu
-                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    LazyColumn ( modifier = Modifier.height(300.dp),
+                        verticalArrangement = Arrangement.spacedBy(5.dp)) {
 
                         Log.d("TribeDetailScreen", "Participantes: ${tribe.miembros}")
 
@@ -352,38 +356,33 @@ fun TribeDetailScreen(tribe: Tribe, viewModel: MyViewModel) {
                             TribeMemberItem(user = miembro, tribe = tribe)
                         }
                     }
-
                     Spacer(modifier = Modifier.height(8.dp))
 
+                    Row (Modifier.align(alignment = Alignment.CenterHorizontally)) {
+                        //boton de unirse a la tribu
+                        currentUser?.let { user ->
+                            val yaEsMiembro = tribe.miembros.any { it.usuarioId == user.usuarioId }
 
-                    //boton de unirse a la tribu
-                    currentUser?.let { user ->
-                        val yaEsMiembro = tribe.miembros.any { it.usuarioId == user.usuarioId }
+                            Log.d("DEBUG", "Miembros tribu: ${tribe.miembros.map { it.usuarioId }}")
+                            Log.d("DEBUG", "Usuario actual ID: ${user.usuarioId}")
+                            Log.d("DEBUG", "Ya es miembro? $yaEsMiembro")
 
-                        Log.d("DEBUG", "Miembros tribu: ${tribe.miembros.map { it.usuarioId }}")
-                        Log.d("DEBUG", "Usuario actual ID: ${user.usuarioId}")
-                        Log.d("DEBUG", "Ya es miembro? $yaEsMiembro")
-                        UnirseTribuButton(
-                            context = context,
-                            viewModel = viewModel,
-                            tribu = tribe,
-                            usuarioActual = user,
-                            miembros = tribe.miembros
-                        )
-                        if (!yaEsMiembro) {
-                            UnirseTribuButton(
-                                context = context,
-                                viewModel = viewModel,
-                                tribu = tribe,
-                                usuarioActual = user,
-                                miembros = tribe.miembros
-                            )
-                        } else {
-                            Text(
-                                text = "Ya eres miembro de esta tribu",
-                                modifier = Modifier.padding(16.dp),
-                                color = Color.Gray
-                            )
+                            if (!yaEsMiembro) {
+                                UnirseTribuButton(
+                                    context = context,
+                                    viewModel = viewModel,
+                                    tribu = tribe,
+                                    usuarioActual = user,
+                                    miembros = tribe.miembros
+                                )
+                            } else {
+                                SalirDeTribuButton(
+                                    context = context,
+                                    viewModel = viewModel,
+                                    tribu = tribe,
+                                    usuarioActual = user
+                                )
+                            }
                         }
                     }
                 }
@@ -481,8 +480,6 @@ fun UnirseTribuButton(
             tribuId = tribu.tribuId,
             usuarioId = usuarioActual.usuarioId,
             miembros = miembros,
-            onSuccess = {
-            },
             onError = { msg ->
                 Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
             }
@@ -491,4 +488,26 @@ fun UnirseTribuButton(
         Text(text = "Unirse a la tribu")
     }
 }
+
+@Composable
+fun SalirDeTribuButton(
+    context: Context,
+    viewModel: MyViewModel,
+    tribu: Tribe,
+    usuarioActual: User
+) {
+    Button(onClick = {
+        viewModel.salirDeTribu(
+            context = context,
+            tribuId = tribu.tribuId,
+            usuarioId = usuarioActual.usuarioId,
+            onError = { msg ->
+                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            }
+        )
+    }) {
+        Text(text = "Salir de la tribu")
+    }
+}
+
 

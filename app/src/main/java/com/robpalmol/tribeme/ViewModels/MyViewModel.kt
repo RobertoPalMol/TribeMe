@@ -136,7 +136,6 @@ class MyViewModel : ViewModel() {
         tribuId: Long,
         usuarioId: Long,
         miembros: List<User>,
-        onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
         viewModelScope.launch {
@@ -152,7 +151,6 @@ class MyViewModel : ViewModel() {
 
                 if (response.isSuccessful) {
                     Toast.makeText(context, "¡Te has unido a la tribu!", Toast.LENGTH_SHORT).show()
-                    onSuccess()
                 } else {
                     onError("Error al unirse: ${response.code()}")
                 }
@@ -161,5 +159,45 @@ class MyViewModel : ViewModel() {
             }
         }
     }
+
+    fun salirDeTribu(
+        context: Context,
+        tribuId: Long,
+        usuarioId: Long,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitInstance.getApiService(context).salirDeTribu(tribuId, usuarioId)
+                if (response.isSuccessful) {
+                    Toast.makeText(context, "Has salido de la tribu", Toast.LENGTH_SHORT).show()
+                } else {
+                    onError("Error al salir de la tribu: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                onError("Error: ${e.localizedMessage}")
+            }
+        }
+    }
+
+    fun buscarTribus(context: Context, query: String, categorias: List<String>? = null) {
+        viewModelScope.launch {
+            try {
+                val trimmedQuery = query.trim()
+                if (trimmedQuery.isEmpty() && (categorias == null || categorias.isEmpty())) {
+                    _tribeData.value = emptyList()
+                    _error.value = null
+                    return@launch
+                }
+                val response = RetrofitInstance.getApiService(context)
+                    .buscarTribus(nombre = trimmedQuery, ubicacion = trimmedQuery, categorias = categorias)
+                _tribeData.value = response
+                _error.value = null
+            } catch (e: Exception) {
+                _error.value = e.message
+            }
+        }
+    }
+
 }
 

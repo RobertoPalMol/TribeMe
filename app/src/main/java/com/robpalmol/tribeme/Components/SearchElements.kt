@@ -36,98 +36,67 @@ import com.robpalmol.tribeme.ui.theme.BlackPost
 import com.robpalmol.tribeme.ui.theme.GrayLetter
 import com.robpalmol.tribeme.ui.theme.WhitePost
 
-@Preview
-@Composable
-fun SearchBar() {
-    // Mantener el estado del valor del TextField
-    var textFieldValue by remember { mutableStateOf(TextFieldValue()) }
 
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center
-    ) {
-        Box(
-            modifier = Modifier
-                .background(WhitePost, shape = RoundedCornerShape(20.dp))
-                .padding(8.dp)
-                .fillMaxWidth()
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(end = 8.dp)
-            ) {
-                TextField(
-                    value = textFieldValue,
-                    onValueChange = { textFieldValue = it },
-                    textStyle = TextStyle(color = GrayLetter, fontSize = 16.sp),
-                    colors = TextFieldDefaults.colors(
-                        cursorColor = BlackPost,
-                        disabledLabelColor = BlackPost,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        focusedLabelColor = BlackPost,
-                        disabledContainerColor = WhitePost,
-                        unfocusedContainerColor = WhitePost,
-                        focusedContainerColor = WhitePost
-                    ),
-                    placeholder = {
-                        Text(
-                            text = "Busca un evento",
-                            style = TextStyle(color = Color.Gray)
-                        )
-                    }
-                )
-                Spacer(Modifier.weight(1f))
-                Icon(
-                    painterResource(id = R.drawable.magnifying_glass_outlined),
-                    contentDescription = "",
-                    modifier = Modifier
-                        .size(45.dp)
-                        .padding(start = 8.dp),
-                    tint = BlackPost
-                )
-            }
+@Composable
+fun SearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit
+) {
+    TextField(
+        value = query,
+        onValueChange = { onQueryChange(it) },
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(WhitePost, shape = RoundedCornerShape(20.dp))
+            .padding(8.dp),
+        placeholder = { Text(text = "Busca un evento", color = Color.Gray) },
+        textStyle = TextStyle(color = GrayLetter, fontSize = 16.sp),
+        colors = TextFieldDefaults.colors(
+            cursorColor = BlackPost,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            focusedContainerColor = WhitePost,
+            unfocusedContainerColor = WhitePost,
+        ),
+        trailingIcon = {
+            Icon(
+                painterResource(id = R.drawable.magnifying_glass_outlined),
+                contentDescription = null,
+                tint = BlackPost,
+                modifier = Modifier.size(45.dp)
+            )
         }
-    }
+    )
 }
 
-@Preview
+
 @Composable
-fun CategoriasCarruselSearch() {
-    var selectedCategory by remember { mutableStateOf(-1) } // Mantener solo un índice seleccionado (-1 significa ninguna)
+fun CategoriasCarruselSearch(
+    selectedCategoryIndex: Int,
+    onCategorySelected: (Int) -> Unit
+) {
     Column {
         Spacer(modifier = Modifier.height(15.dp))
-
         Row {
             Spacer(modifier = Modifier.width(30.dp))
-
             Text(
-                text = "Filtrar por categorias:",
+                text = "Filtrar por categorías:",
                 style = TextStyle(fontSize = 20.sp),
                 color = WhitePost
             )
         }
-
         Spacer(modifier = Modifier.height(10.dp))
 
         LazyRow {
             items(category_icons.size) { index ->
-                if (index == 0) {
-                    Spacer(modifier = Modifier.width(15.dp))
-                }
-
+                if (index == 0) Spacer(modifier = Modifier.width(15.dp))
                 CategoryButton(
                     icon = category_icons[index],
-                    isSelected = index == selectedCategory,
-                    onClick = {
-                        selectedCategory = index
-                    },
+                    isSelected = index == selectedCategoryIndex,
+                    onClick = { onCategorySelected(index) },
                     name = categoryNames[index]
                 )
-
-                if (index < category_icons.size) {
-                    Spacer(modifier = Modifier.width(15.dp))
-                }
+                Spacer(modifier = Modifier.width(15.dp))
             }
         }
     }

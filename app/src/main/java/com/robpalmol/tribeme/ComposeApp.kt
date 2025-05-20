@@ -153,7 +153,10 @@ fun ComposeApp() {
                 }
             }
             composable(route = "Buscar") {
-                SearchScreen()
+                SearchScreen(viewModel,
+                    onItemClick = { selectedTribe ->
+                    navController.navigate("detail/${selectedTribe.tribuId}")
+                })
             }
             composable(route = "Crear") {
                 CreateTribe(
