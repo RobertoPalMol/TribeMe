@@ -25,8 +25,8 @@ data class TribuDTO(
     val autorId: Long,
     val ubicacion: String
 )
-
-data class CreateTribeRequest(
+data class TribuUpdateDTO(
+    val tribuId: Long,
     val nombre: String,
     val descripcion: String,
     val categorias: List<String>,
@@ -35,7 +35,6 @@ data class CreateTribeRequest(
     val esPrivada: Boolean,
     val ubicacion: String
 )
-
 
 data class User(
     val usuarioId: Long,

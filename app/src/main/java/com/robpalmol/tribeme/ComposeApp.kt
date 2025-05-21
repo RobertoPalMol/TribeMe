@@ -44,7 +44,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.robpalmol.tribeme.Components.EditTribe
 import com.robpalmol.tribeme.Components.TribeDetailScreen
+import com.robpalmol.tribeme.DataBase.Models.Tribe
 import com.robpalmol.tribeme.Screens.CreateTribe
 import com.robpalmol.tribeme.Screens.HomeScreen
 import com.robpalmol.tribeme.Screens.LogIn
@@ -87,6 +89,7 @@ fun ComposeApp() {
         Route("detail/{tribeId}", showInMenu = false, showMenu = false),
         Route("Login", showInMenu = false, showMenu = false),
         Route("Register", showInMenu = false, showMenu = false),
+        Route("Editar/{tribeId}", showInMenu = false, showMenu = false),
     )
 
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
@@ -131,7 +134,7 @@ fun ComposeApp() {
                 )
             }
             composable("detail/{tribeId}") { backStackEntry ->
-                val tribeId = backStackEntry.arguments?.getString("tribeId")?.toIntOrNull()
+                val tribeId = backStackEntry.arguments?.getString("tribeId")?.toLongOrNull()
 
                 if (tribeId != null) {
                     val tribe = viewModel.getTribeById(tribeId)
@@ -155,8 +158,8 @@ fun ComposeApp() {
             composable(route = "Buscar") {
                 SearchScreen(viewModel,
                     onItemClick = { selectedTribe ->
-                    navController.navigate("detail/${selectedTribe.tribuId}")
-                })
+                        navController.navigate("detail/${selectedTribe.tribuId}")
+                    })
             }
             composable(route = "Crear") {
                 CreateTribe(
@@ -164,11 +167,21 @@ fun ComposeApp() {
                     viewModel = viewModel
                 )
             }
+            composable(route = "Editar/{tribeId}") { backStackEntry ->
+                val tribeId = backStackEntry.arguments?.getString("tribeId")?.toLongOrNull()
+                val tribe = tribeId?.let { viewModel.getTribeById(it) }
+                if (tribe != null) {
+                    EditTribe(title = "Editar tribu", viewModel = viewModel, tribeData = tribe)
+                } else {
+                    Text("Tribu no encontrada")
+                }
+            }
             composable(route = "Tribus") {
                 MyDataScreen()
             }
-            composable(route = "Usuario") {
-                ProfileScreen(navController, viewModel)
+            composable(route = "Usuario") {backStackEntry ->
+                val reloadKey = backStackEntry.destination.route + System.currentTimeMillis()
+                ProfileScreen(navController, viewModel, reloadKey)
             }
             composable(route = "Login") {
                 LogIn(navController)

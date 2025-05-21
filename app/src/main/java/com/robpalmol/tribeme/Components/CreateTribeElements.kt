@@ -56,7 +56,7 @@ import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
 import com.canhub.cropper.CropImageView
-import com.robpalmol.tribeme.DataBase.Models.CreateTribeRequest
+import com.robpalmol.tribeme.DataBase.Models.TribuDTO
 import com.robpalmol.tribeme.R
 import com.robpalmol.tribeme.ViewModels.MyViewModel
 import com.robpalmol.tribeme.ui.theme.BlackPost
@@ -646,14 +646,15 @@ fun SaveElement(
                 }
 
 
-                val createRequest = CreateTribeRequest(
+                val createRequest = TribuDTO(
                     nombre = name.value,
                     descripcion = description.value,
                     categorias = selectedCategories.value,
                     imagenUrl = imageUrl.value,
                     numeroMaximoMiembros = members.value.takeIf { it > 0 } ?: 10,
                     esPrivada = private.value,
-                    ubicacion = ubicacion.value
+                    ubicacion = ubicacion.value,
+                    autorId = viewModel.currentUser.value?.usuarioId ?: 0
                 )
 
                 Log.d("SaveElement", "Request construido: $createRequest")

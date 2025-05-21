@@ -13,16 +13,20 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.unit.dp
@@ -30,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.robpalmol.tribeme.Components.ActiveElements
 import com.robpalmol.tribeme.Components.CloseSesion
+import com.robpalmol.tribeme.Components.YourPostElement
 import com.robpalmol.tribeme.ViewModels.MyViewModel
 import com.robpalmol.tribeme.ui.theme.BlackPost
 import com.robpalmol.tribeme.ui.theme.DifuminatedBackground
@@ -37,14 +42,21 @@ import com.robpalmol.tribeme.ui.theme.DifuminatedBackground
 @Composable
 fun ProfileScreen(
     navController: NavController,
-    viewModel: MyViewModel
+    viewModel: MyViewModel,
+    reloadKey: Any
 ) {
     // Obtener tribus y usuario actual desde el ViewModel
     val currentUser = viewModel.currentUser.collectAsState().value
     val tribes = viewModel.tribeData.collectAsState().value
+    val context = LocalContext.current
 
     // Filtrar las tribus creadas por el usuario actual
     val userTribes = tribes.filter { it.autorId == currentUser?.usuarioId.toString() }
+
+    LaunchedEffect(reloadKey) {
+        viewModel.loadCurrentUser(context)
+        viewModel.getAllTribes(context)
+    }
 
     Column(
         modifier = Modifier
@@ -93,36 +105,31 @@ fun ProfileScreen(
                     .padding(horizontal = 20.dp)
             ) {
                 ActiveElements()
-                Spacer(modifier = Modifier.height(5.dp))
-
+                Spacer(modifier = Modifier.height(15.dp))
 
                 // Mostrar las tribus creadas por el usuario
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxWidth().height(450.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     items(userTribes) { tribe ->
-                        // Aquí puedes personalizar la forma en que se muestran las tribus
-                        Text(
-                            text = tribe.nombre,
-                            color = Color.White,
-                            style = TextStyle(fontSize = 24.sp)
-                        )
+                        YourPostElement(tribe, navController = navController, viewModel)
                         Spacer(modifier = Modifier.height(10.dp))
                     }
-
-                    item {
-                        Spacer(modifier = Modifier.height(60.dp))
-                    }
-
-                    // Botón para cerrar sesión
-                    item {
-                        Spacer(modifier = Modifier.height(20.dp))
-                        CloseSesion(navController = navController)
-                        Spacer(modifier = Modifier.height(120.dp))
-                    }
                 }
+                Spacer(modifier = Modifier.height(20.dp))
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CloseSesion(navController = navController)
+                }
+                Spacer(modifier = Modifier.height(120.dp))
             }
         }
     }
 }
+
+
+
+

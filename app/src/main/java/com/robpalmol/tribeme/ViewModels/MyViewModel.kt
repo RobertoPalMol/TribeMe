@@ -3,12 +3,15 @@ package com.robpalmol.tribeme.ViewModels
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.robpalmol.tribeme.DataBase.Models.CreateTribeRequest
 import com.robpalmol.tribeme.DataBase.Models.EventoDTO
 import com.robpalmol.tribeme.DataBase.Models.Tribe
 import com.robpalmol.tribeme.DataBase.Models.TribuDTO
+import com.robpalmol.tribeme.DataBase.Models.TribuUpdateDTO
 import com.robpalmol.tribeme.DataBase.Models.User
 import com.robpalmol.tribeme.DataBase.RetrofitInstance
 import com.robpalmol.tribeme.util.JwtUtils
@@ -58,14 +61,14 @@ class MyViewModel : ViewModel() {
         }
     }
 
-    fun getTribeById(id: Int): Tribe? {
+    fun getTribeById(id: Long): Tribe? {
         Log.d("ViewModel", "Buscando tribu con ID: $id en lista: ${tribeData.value.map { it.tribuId }}")
-        return tribeData.value.find { it.tribuId.toInt() == id }
+        return tribeData.value.find { it.tribuId == id }
     }
 
     fun createTribe(
         context: Context,
-        createRequest: CreateTribeRequest,
+        createRequest: TribuDTO,
         onSuccess: (Tribe) -> Unit,
         onError: (String) -> Unit
     ) {
@@ -198,6 +201,37 @@ class MyViewModel : ViewModel() {
             }
         }
     }
+
+    fun updateTribe(tribeId: Long, request: TribuUpdateDTO, context: Context) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitInstance.getApiService(context = context).updateTribe(tribeId, request)
+                if (response.isSuccessful) {
+                    Log.d("UpdateTribe", "Tribu actualizada correctamente")
+                } else {
+                    Log.e("UpdateTribe", "Error en la respuesta: ${response.code()}")
+                    Log.e("UpdateTribe", "Error en la respuesta: ${response.errorBody()?.string()}")
+                }
+            } catch (e: Exception) {
+                Log.e("UpdateTribe", "Error al actualizar la tribu", e)
+            }
+        }
+    }
+    fun eliminarTribu(tribuId: Long, onSuccess: () -> Unit, onError: (String) -> Unit, context: Context) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitInstance.getApiService(context = context).deleteTribu(tribuId)
+                if (response.isSuccessful) {
+                    onSuccess()
+                } else {
+                    onError("Error al eliminar tribu: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                onError("Excepción al eliminar tribu: ${e.localizedMessage}")
+            }
+        }
+    }
+
 
 }
 

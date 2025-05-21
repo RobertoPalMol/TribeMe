@@ -346,7 +346,7 @@ fun NoAccount(navController: NavHostController) {
 }
 
 @Composable
-fun YesAccount(navController2: NavHostController) {
+fun YesAccount(navController: NavHostController) {
     Row(
         modifier = Modifier
             .fillMaxWidth(),
@@ -370,7 +370,7 @@ fun YesAccount(navController2: NavHostController) {
             fontSize = 13.sp,
             modifier = Modifier
                 .padding(10.dp)
-                .clickable { navController2.navigate("LogIn") }
+                .clickable { navController.navigate("LogIn") }
         )
     }
 }
