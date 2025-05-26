@@ -2,4 +2,12 @@
 <resources>
 
     <style name="Theme.TribeMe" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="CropperTheme.Fix" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="windowNoTitle">false</item>
+        <item name="windowActionBar">true</item>
+        <item name="colorPrimary">#2196F3</item>
+        <item name="colorPrimaryDark">#1976D2</item>
+        <item name="colorAccent">#FF4081</item>
+    </style>
+
 </resources>

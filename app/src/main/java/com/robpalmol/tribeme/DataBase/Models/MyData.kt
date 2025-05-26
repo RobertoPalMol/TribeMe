@@ -5,7 +5,7 @@ data class Tribe(
     val tribuId: Long,
     val nombre: String,
     val descripcion: String,
-    val imagenUrl: String?,
+    val imagenUrl: String,
     val categorias: List<String>,
     val numeroMaximoMiembros: Int,
     val esPrivada: Boolean,
@@ -60,3 +60,6 @@ data class EventoDTO(
     val creadorId: Long
 )
 
+data class ImageUploadResponse(
+    val imageUrl: String
+)

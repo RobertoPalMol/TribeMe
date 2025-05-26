@@ -30,6 +30,7 @@ import com.robpalmol.tribeme.Components.AddPhoto
 import com.robpalmol.tribeme.Components.BooleanTribe
 import com.robpalmol.tribeme.Components.CategoriasCarrusel
 import com.robpalmol.tribeme.Components.MaxMembers
+import com.robpalmol.tribeme.Components.PostPhoto
 import com.robpalmol.tribeme.Components.SaveElement
 import com.robpalmol.tribeme.Components.TribeDescription
 import com.robpalmol.tribeme.Components.TribeName
@@ -47,9 +48,9 @@ fun CreateTribe(
 ) {
     val name = rememberSaveable { mutableStateOf("") }
     val description = rememberSaveable { mutableStateOf("") }
-    val members = rememberSaveable { mutableStateOf(0) }
+    val members = rememberSaveable { mutableStateOf(25) }
     val selectedCategories = rememberSaveable { mutableStateOf(listOf<String>()) }
-    val imageUrl = rememberSaveable { mutableStateOf("") }
+    val imageUrl = viewModel.imagenUrl
     val private1 = remember { mutableStateOf(true) }
     val dateError = remember { mutableStateOf(false) }
     val ubicacion = rememberSaveable { mutableStateOf("") }
@@ -93,14 +94,20 @@ fun CreateTribe(
                     }
                 )
             }
-            //item { AddPhoto(imageUrl) }
+            item { AddPhoto(
+                imageUrl = viewModel.imagenUrl,
+                onImageSelected = { uri ->
+                    viewModel.subirImagen(uri, context)
+                }
+            ) }
+            item { PostPhoto(imageUrl = imageUrl.value)}
             item { BooleanTribe("Tribu privada", private1) }
             item { BooleanTribe("Los miembros podrán crear eventos", remember { mutableStateOf(true) }) }
             item {
                 SaveElement(
                     name = name,
                     description = description,
-                    imageUrl = imageUrl,
+                    imageUrl = viewModel.imagenUrl,
                     selectedCategories = selectedCategories,
                     private = private1,
                     members = members,

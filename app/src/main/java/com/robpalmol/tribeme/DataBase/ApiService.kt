@@ -2,16 +2,21 @@ package com.robpalmol.tribeme.DataBase
 
 import com.robpalmol.tribeme.DataBase.Models.AuthResponse
 import com.robpalmol.tribeme.DataBase.Models.EventoDTO
+import com.robpalmol.tribeme.DataBase.Models.ImageUploadResponse
 import com.robpalmol.tribeme.DataBase.Models.Tribe
 import com.robpalmol.tribeme.DataBase.Models.TribuDTO
 import com.robpalmol.tribeme.DataBase.Models.TribuUpdateDTO
 import com.robpalmol.tribeme.DataBase.Models.User
+import okhttp3.MultipartBody
+import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Body
 import retrofit2.http.DELETE
+import retrofit2.http.Multipart
 import retrofit2.http.PUT
+import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -66,5 +71,11 @@ interface ApiService {
     suspend fun deleteTribu(
         @Path("id") tribuId: Long
     ): Response<Void>
+
+    @Multipart
+    @POST("api/tribus/imagen")
+    suspend fun uploadImage(
+        @Part image: MultipartBody.Part
+    ): Response<ImageUploadResponse>
 
 }

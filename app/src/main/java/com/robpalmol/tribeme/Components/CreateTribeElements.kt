@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -28,6 +30,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -45,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -52,6 +56,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImagePainter
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
@@ -307,7 +314,7 @@ fun MaxMembers(members: MutableState<Int>) {
 
 @Composable
 fun CategoriasCarrusel(
-    selectedCategories: MutableState<List<String>>, // Cambiado a Set para manejar la selección de forma más robusta.
+    selectedCategories: MutableState<List<String>>,
     onCategorySelect: (Set<String>) -> Unit
 ) {
     Spacer(modifier = Modifier.height(30.dp))
@@ -362,7 +369,7 @@ fun CategoryButton(
     val interactionSource = remember { MutableInteractionSource() }
 
     Box(
-        modifier = Modifier.clickable(onClick = onClick) // Detectar clic
+        modifier = Modifier.clickable(onClick = onClick)
     ) {
         Button(
             onClick = onClick,
@@ -400,16 +407,15 @@ fun CategoryButton(
 }
 
 @Composable
-fun AddPhoto(imageUrl: MutableState<String>) {
+fun AddPhoto(imageUrl: MutableState<String>, onImageSelected: (Uri) -> Unit) {
     val context = LocalContext.current
 
     val cropImage = rememberLauncherForActivityResult(CropImageContract()) { result ->
         if (result.isSuccessful) {
             val croppedImageUri = result.uriContent
             croppedImageUri?.let { uri ->
-                // We only save the URI of the selected and cropped image
                 imageUrl.value = uri.toString()
-                Toast.makeText(context, "Imagen seleccionada", Toast.LENGTH_SHORT).show()
+                onImageSelected(uri)
             }
         } else {
             Toast.makeText(context, "Error al recortar la imagen", Toast.LENGTH_SHORT).show()
@@ -420,12 +426,11 @@ fun AddPhoto(imageUrl: MutableState<String>) {
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let { selectedUri ->
-            // Call the activity to crop the selected image
             cropImage.launch(
                 CropImageContractOptions(
                     uri = selectedUri,
                     cropImageOptions = CropImageOptions(
-                        guidelines = CropImageView.Guidelines.ON,  // Show cropping guides (can be disabled)
+                        guidelines = CropImageView.Guidelines.ON,
                         aspectRatioX = 1,
                         aspectRatioY = 1,
                         fixAspectRatio = true
@@ -451,40 +456,53 @@ fun AddPhoto(imageUrl: MutableState<String>) {
         Spacer(modifier = Modifier.height(10.dp))
     }
 }
-/*
+
+
 @Composable
 fun PostPhoto(imageUrl: String?) {
-    Box(
-        modifier = Modifier
-            .size(150.dp)
-            .clip(RoundedCornerShape(10.dp))
-            .background(BlackPost)
-    ) {
-        if (!imageUrl.isNullOrEmpty()) {
-            Image(
-                painter = rememberAsyncImagePainter(imageUrl),
-                contentDescription = "Imagen subida",
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(10.dp),
-                contentScale = ContentScale.Crop
-            )
+    Row(horizontalArrangement = Arrangement.Center) {
+        Box(
+            modifier = Modifier
+                .size(150.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(BlackPost)
+        ) {
+            if (!imageUrl.isNullOrEmpty()) {
+                val painter = rememberAsyncImagePainter(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(imageUrl)
+                        .crossfade(true)
+                        .build()
+                )
 
-        } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(BlackPost)
-                    .padding(10.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "No hay imagen adjunta", color = WhitePost)
+                Image(
+                    painter = painter,
+                    contentDescription = "Imagen subida",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(10.dp),
+                    contentScale = ContentScale.Crop
+                )
+
+                if (painter.state is AsyncImagePainter.State.Loading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center),
+                        color = WhitePost
+                    )
+                }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(10.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "No hay imagen adjunta", color = WhitePost)
+                }
             }
         }
     }
 }
-
- */
 
 
 @Composable

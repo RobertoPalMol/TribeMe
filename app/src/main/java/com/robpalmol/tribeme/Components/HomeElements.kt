@@ -38,6 +38,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -46,9 +47,15 @@ import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ErrorResult
+import coil.request.ImageRequest
+import coil.request.SuccessResult
 import com.robpalmol.tribeme.DataBase.Models.EventoDTO
+import com.robpalmol.tribeme.DataBase.Models.ImageUploadResponse
 import com.robpalmol.tribeme.DataBase.Models.Tribe
 import com.robpalmol.tribeme.DataBase.Models.User
+import com.robpalmol.tribeme.DataBase.RetrofitInstance
 import com.robpalmol.tribeme.R
 import com.robpalmol.tribeme.ViewModels.MyViewModel
 import com.robpalmol.tribeme.ui.theme.BlackPost
@@ -57,10 +64,25 @@ import com.robpalmol.tribeme.ui.theme.DifuminatedBackground
 import com.robpalmol.tribeme.ui.theme.GrayCategory
 import com.robpalmol.tribeme.ui.theme.PinkPost
 import com.robpalmol.tribeme.ui.theme.WhitePost
+import com.robpalmol.tribeme.util.SessionManager
 
 
 @Composable
-fun TribeElement(tribe: Tribe, onClick: () -> Unit) {
+fun TribeElement(
+    tribe: Tribe,
+    onClick: () -> Unit,
+    context: Context
+) {
+
+    fun obtenerUrlImagen(imagenDb: String): String {
+        val baseUrl = RetrofitInstance.BASE_URL + "/api/tribus/imagenes/"
+        val fileName = imagenDb.substringAfterLast("/")
+        return baseUrl + fileName
+    }
+
+    val urlImagen = obtenerUrlImagen(tribe.imagenUrl)
+    val token = SessionManager(context).getToken()
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -85,8 +107,7 @@ fun TribeElement(tribe: Tribe, onClick: () -> Unit) {
                 Text(
                     text = "@${tribe.autorNombre}",
                     color = BluePost,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd),
+                    modifier = Modifier.align(Alignment.TopEnd),
                     fontSize = 24.sp
                 )
             }
@@ -108,7 +129,33 @@ fun TribeElement(tribe: Tribe, onClick: () -> Unit) {
                                 .fillMaxWidth()
                                 .height(200.dp)
                                 .background(BlackPost, shape = RoundedCornerShape(20.dp))
-                        )
+                                .padding(10.dp)
+                        ) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(urlImagen)
+                                    .addHeader("Authorization", "Bearer $token")
+                                    .crossfade(true)
+                                    .listener(
+                                        object : ImageRequest.Listener {
+                                            override fun onError(request: ImageRequest, result: ErrorResult) {
+                                                Log.e("AsyncImage", "Error al cargar la imagen", result.throwable)
+                                            }
+                                            override fun onSuccess(request: ImageRequest, result: SuccessResult) {
+                                                Log.d("AsyncImage", "Imagen cargada correctamente")
+                                            }
+                                        }
+                                    )
+                                    .build(),
+                                contentDescription = "Imagen de la tribu",
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(RoundedCornerShape(20.dp)),
+                                contentScale = ContentScale.Crop
+                            )
+                            Log.d("TribeElement", "Imagen URL: $urlImagen")
+                            Log.d("TribeElement", "Imagen URL original: ${tribe.imagenUrl}")
+                        }
                     }
 
                     Column(
@@ -126,7 +173,7 @@ fun TribeElement(tribe: Tribe, onClick: () -> Unit) {
 
                         Spacer(modifier = Modifier.weight(1f))
 
-                        Text(text = "Participantes: ${tribe.miembros?.size}/${tribe.numeroMaximoMiembros}")
+                        Text(text = "Participantes: ${tribe.miembros.size}/${tribe.numeroMaximoMiembros}")
 
                         Spacer(modifier = Modifier.weight(1f))
 
@@ -146,9 +193,9 @@ fun TribeElement(tribe: Tribe, onClick: () -> Unit) {
                 }
             }
         }
-
     }
 }
+
 
 
 @Composable

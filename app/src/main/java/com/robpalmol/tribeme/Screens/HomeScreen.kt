@@ -97,7 +97,7 @@ fun HomeScreen(
             item { Spacer(modifier = Modifier.height(20.dp)) }
 
             items(tribeList) { tribe ->
-                TribeElement(tribe = tribe, onClick = { onItemClick(tribe) })
+                TribeElement(tribe = tribe, onClick = { onItemClick(tribe) }, context)
             }
 
             item { Spacer(modifier = Modifier.height(120.dp)) }

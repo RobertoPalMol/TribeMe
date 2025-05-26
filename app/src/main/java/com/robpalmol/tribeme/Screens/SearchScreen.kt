@@ -83,7 +83,7 @@ fun SearchScreen(viewModel: MyViewModel, onItemClick: (Tribe) -> Unit,) {
                     .padding(16.dp)
             ) {
                 items(tribes) { tribe ->
-                    TribeElement(tribe = tribe, onClick = { onItemClick(tribe) })
+                    TribeElement(tribe = tribe, onClick = { onItemClick(tribe) }, context = context)
                     Spacer(modifier = Modifier.height(10.dp))
                 }
             }

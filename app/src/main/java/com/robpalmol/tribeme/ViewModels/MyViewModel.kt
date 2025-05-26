@@ -1,6 +1,9 @@
 package com.robpalmol.tribeme.ViewModels
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.getValue
@@ -8,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.robpalmol.tribeme.DataBase.ApiService
 import com.robpalmol.tribeme.DataBase.Models.EventoDTO
 import com.robpalmol.tribeme.DataBase.Models.Tribe
 import com.robpalmol.tribeme.DataBase.Models.TribuDTO
@@ -16,9 +20,15 @@ import com.robpalmol.tribeme.DataBase.Models.User
 import com.robpalmol.tribeme.DataBase.RetrofitInstance
 import com.robpalmol.tribeme.util.JwtUtils
 import com.robpalmol.tribeme.util.SessionManager
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.File
 
 class MyViewModel : ViewModel() {
     private val _userData = MutableStateFlow<List<User>>(emptyList())
@@ -232,6 +242,44 @@ class MyViewModel : ViewModel() {
         }
     }
 
+    val imagenUrl = mutableStateOf("")
+
+    fun subirImagen(uri: Uri, context: Context) {
+        viewModelScope.launch {
+            val file = uriToFile(uri, context)
+            file?.let {
+                val requestFile = it.asRequestBody("image/*".toMediaTypeOrNull())
+                val body = MultipartBody.Part.createFormData("image", it.name, requestFile)
+
+                val response = RetrofitInstance.getApiService(context).uploadImage(body)
+                if (response.isSuccessful) {
+                    val responseBody = response.body()
+                    Log.d("UPLOAD", "Respuesta cruda: $responseBody")
+
+                    responseBody?.let { res ->
+                        Log.d("UPLOAD", "URL del backend: ${res.imageUrl}")
+                        imagenUrl.value = res.imageUrl
+                    } ?: run {
+                        Log.e("UPLOAD", "El cuerpo de la respuesta fue null")
+                    }
+                } else {
+                    Log.e("UPLOAD", "Error al subir imagen. Código: ${response.code()}, mensaje: ${response.message()}")
+                }
+            }
+        }
+    }
+
+
+    private fun uriToFile(uri: Uri, context: Context): File? {
+        val inputStream = context.contentResolver.openInputStream(uri)
+        val tempFile = File.createTempFile("upload_", ".jpg", context.cacheDir)
+        inputStream?.use { input ->
+            tempFile.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        }
+        return tempFile
+    }
 
 }
 
