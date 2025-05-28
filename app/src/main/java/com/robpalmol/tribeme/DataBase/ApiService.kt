@@ -1,6 +1,7 @@
 package com.robpalmol.tribeme.DataBase
 
 import com.robpalmol.tribeme.DataBase.Models.AuthResponse
+import com.robpalmol.tribeme.DataBase.Models.CreateEventoDTO
 import com.robpalmol.tribeme.DataBase.Models.EventoDTO
 import com.robpalmol.tribeme.DataBase.Models.ImageUploadResponse
 import com.robpalmol.tribeme.DataBase.Models.Tribe
@@ -8,7 +9,6 @@ import com.robpalmol.tribeme.DataBase.Models.TribuDTO
 import com.robpalmol.tribeme.DataBase.Models.TribuUpdateDTO
 import com.robpalmol.tribeme.DataBase.Models.User
 import okhttp3.MultipartBody
-import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -36,11 +36,17 @@ interface ApiService {
     @GET("api/tribus")
     suspend fun getAllTribes(): List<Tribe>
 
+    @GET("api/tribus/mis-tribus")
+    suspend fun getMyTribes(): List<Tribe>
+
     @POST("api/tribus")
     suspend fun crearTribu(@Body tribu: TribuDTO): Tribe
 
-    @GET("api/eventos")
-    suspend fun getAllEventos(): List<EventoDTO>
+    @GET("api/eventos/tribu/{id}")
+    suspend fun getEventosPorTribu(@Path("id") tribuId: Long): List<EventoDTO>
+
+    @POST("api/eventos")
+    suspend fun crearEvento(@Body nuevoEvento: CreateEventoDTO): CreateEventoDTO
 
     @POST("api/tribus/{tribuId}/unirse/{usuarioId}")
     suspend fun unirseATribu(

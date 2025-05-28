@@ -84,7 +84,7 @@ fun ComposeApp() {
         Route("Inicio", R.drawable.home_outlined, R.drawable.home_solid),
         Route("Buscar", R.drawable.magnifying_glass_outlined, R.drawable.magnifying_glass_solid),
         Route("Crear", R.drawable.plus_square_outlined, R.drawable.plus_square_solid),
-        Route("Tribus", R.drawable.ic_launcher_background, R.drawable.ic_launcher_foreground),
+        Route("Mis Tribus", R.drawable.ic_launcher_background, R.drawable.ic_launcher_foreground),
         Route("Usuario", R.drawable.profile_outlined, R.drawable.profile_outlined),
         Route("detail/{tribeId}", showInMenu = false, showMenu = false),
         Route("Login", showInMenu = false, showMenu = false),
@@ -176,8 +176,10 @@ fun ComposeApp() {
                     Text("Tribu no encontrada")
                 }
             }
-            composable(route = "Tribus") {
-                MyDataScreen()
+            composable(route = "Mis Tribus") {
+                MyDataScreen(onItemClick = { selectedTribe ->
+                    navController.navigate("detail/${selectedTribe.tribuId}")
+                })
             }
             composable(route = "Usuario") {backStackEntry ->
                 val reloadKey = backStackEntry.destination.route + System.currentTimeMillis()

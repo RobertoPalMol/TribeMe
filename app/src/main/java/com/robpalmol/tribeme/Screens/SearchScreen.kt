@@ -86,6 +86,9 @@ fun SearchScreen(viewModel: MyViewModel, onItemClick: (Tribe) -> Unit,) {
                     TribeElement(tribe = tribe, onClick = { onItemClick(tribe) }, context = context)
                     Spacer(modifier = Modifier.height(10.dp))
                 }
+                item{
+                    Spacer(modifier = Modifier.height(120.dp))
+                }
             }
         }
     }

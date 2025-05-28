@@ -1,17 +1,14 @@
 package com.robpalmol.tribeme.ViewModels
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.robpalmol.tribeme.DataBase.ApiService
+import coil.ImageLoader
+import com.robpalmol.tribeme.DataBase.Models.CreateEventoDTO
 import com.robpalmol.tribeme.DataBase.Models.EventoDTO
 import com.robpalmol.tribeme.DataBase.Models.Tribe
 import com.robpalmol.tribeme.DataBase.Models.TribuDTO
@@ -20,13 +17,12 @@ import com.robpalmol.tribeme.DataBase.Models.User
 import com.robpalmol.tribeme.DataBase.RetrofitInstance
 import com.robpalmol.tribeme.util.JwtUtils
 import com.robpalmol.tribeme.util.SessionManager
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
+import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 
@@ -71,6 +67,20 @@ class MyViewModel : ViewModel() {
         }
     }
 
+    fun getMyTribes(context: Context) {
+        viewModelScope.launch {
+            try {
+                val myTribes = RetrofitInstance.getApiService(context).getMyTribes()
+                Log.d("MyViewModel", myTribes.toString())
+                _tribeData.value = myTribes
+            } catch (e: Exception) {
+                _error.value = "No se pudo obtener mis tribus: ${e.localizedMessage}"
+                Log.d("MyViewModel", "Error al obtener mis tribus: $e")
+            }
+        }
+    }
+
+
     fun getTribeById(id: Long): Tribe? {
         Log.d("ViewModel", "Buscando tribu con ID: $id en lista: ${tribeData.value.map { it.tribuId }}")
         return tribeData.value.find { it.tribuId == id }
@@ -94,9 +104,11 @@ class MyViewModel : ViewModel() {
                     esPrivada = createRequest.esPrivada,
                     categorias = createRequest.categorias,
                     autorId = currentUser?.usuarioId ?: 0,
-                    ubicacion = createRequest.ubicacion
+                    ubicacion = createRequest.ubicacion,
+                    crearEventos = createRequest.crearEventos
                 )
-
+                Log.d("MyViewModel1", "privada: ${createRequest.esPrivada}")
+                Log.d("MyViewModel1", "eventos: ${createRequest.crearEventos}")
                 val createdTribe = RetrofitInstance.getApiService(context).crearTribu(tribuDTO)
 
                 _tribeData.value = _tribeData.value + createdTribe
@@ -132,10 +144,10 @@ class MyViewModel : ViewModel() {
         }
     }
 
-    fun getAllEventos(context: Context) {
+    fun getEventosPorTribu(context: Context, tribuId: Long) {
         viewModelScope.launch {
             try {
-                val response = RetrofitInstance.getApiService(context).getAllEventos()
+                val response = RetrofitInstance.getApiService(context).getEventosPorTribu(tribuId)
                 _eventos.value = response
             } catch (e: Exception) {
                 _error.value = "Error al obtener eventos: ${e.localizedMessage}"
@@ -143,6 +155,18 @@ class MyViewModel : ViewModel() {
             }
         }
     }
+
+    fun crearEvento(context: Context, eventoDTO: CreateEventoDTO) {
+        viewModelScope.launch {
+            try {
+                RetrofitInstance.getApiService(context).crearEvento(eventoDTO)
+            } catch (e: Exception) {
+                Log.e("CrearEvento", "Error: ${e.localizedMessage}", e)
+            }
+        }
+    }
+
+
 
     fun unirseATribu(
         context: Context,
@@ -244,30 +268,34 @@ class MyViewModel : ViewModel() {
 
     val imagenUrl = mutableStateOf("")
 
-    fun subirImagen(uri: Uri, context: Context) {
+    fun subirImagen(
+        uri: Uri,
+        context: Context,
+        onResult: (String?) -> Unit
+    ) {
         viewModelScope.launch {
             val file = uriToFile(uri, context)
-            file?.let {
-                val requestFile = it.asRequestBody("image/*".toMediaTypeOrNull())
-                val body = MultipartBody.Part.createFormData("image", it.name, requestFile)
+            if (file != null) {
+                val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+                val body = MultipartBody.Part.createFormData("image", file.name, requestFile)
 
-                val response = RetrofitInstance.getApiService(context).uploadImage(body)
-                if (response.isSuccessful) {
-                    val responseBody = response.body()
-                    Log.d("UPLOAD", "Respuesta cruda: $responseBody")
-
-                    responseBody?.let { res ->
-                        Log.d("UPLOAD", "URL del backend: ${res.imageUrl}")
-                        imagenUrl.value = res.imageUrl
-                    } ?: run {
-                        Log.e("UPLOAD", "El cuerpo de la respuesta fue null")
+                try {
+                    val response = RetrofitInstance.getApiService(context).uploadImage(body)
+                    if (response.isSuccessful) {
+                        val responseBody = response.body()
+                        onResult(responseBody?.imageUrl) // Pasa la URL remota o null si fallo
+                    } else {
+                        onResult(null)
                     }
-                } else {
-                    Log.e("UPLOAD", "Error al subir imagen. Código: ${response.code()}, mensaje: ${response.message()}")
+                } catch (e: Exception) {
+                    onResult(null)
                 }
+            } else {
+                onResult(null)
             }
         }
     }
+
 
 
     private fun uriToFile(uri: Uri, context: Context): File? {
@@ -279,6 +307,29 @@ class MyViewModel : ViewModel() {
             }
         }
         return tempFile
+    }
+
+    fun obtenerUrlImagen(imagenDb: String): String {
+        val baseUrl = RetrofitInstance.BASE_URL + "/api/tribus/imagenes/"
+        val fileName = imagenDb.substringAfterLast("/")
+        return baseUrl + fileName
+    }
+
+    fun createAuthenticatedImageLoader(context: Context, token: String): ImageLoader {
+        val okHttpClient = OkHttpClient.Builder()
+            .addInterceptor { chain ->
+                val original = chain.request()
+                val requestBuilder = original.newBuilder()
+                    .header("Authorization", "Bearer $token")
+                val request = requestBuilder.build()
+                chain.proceed(request)
+            }
+            .build()
+
+        return ImageLoader.Builder(context)
+            .okHttpClient(okHttpClient)
+            .crossfade(true)
+            .build()
     }
 
 }

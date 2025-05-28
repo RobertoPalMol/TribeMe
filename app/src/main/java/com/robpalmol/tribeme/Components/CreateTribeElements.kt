@@ -55,7 +55,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
@@ -92,6 +91,8 @@ val categoryNames = listOf(
     "Friki",
     "Estilo de vida"
 )
+
+val imagenState = mutableStateOf<Boolean?>(false)
 
 @Composable
 fun TribeName(name: MutableState<String>) {
@@ -407,7 +408,7 @@ fun CategoryButton(
 }
 
 @Composable
-fun AddPhoto(imageUrl: MutableState<String>, onImageSelected: (Uri) -> Unit) {
+fun AddPhoto(selectedImageUri: MutableState<Uri?>,imageUrl: MutableState<String>, onImageSelected: (Uri) -> Unit) {
     val context = LocalContext.current
 
     val cropImage = rememberLauncherForActivityResult(CropImageContract()) { result ->
@@ -457,47 +458,66 @@ fun AddPhoto(imageUrl: MutableState<String>, onImageSelected: (Uri) -> Unit) {
     }
 }
 
-
 @Composable
-fun PostPhoto(imageUrl: String?) {
-    Row(horizontalArrangement = Arrangement.Center) {
+fun PostPhoto(imageUri: Uri?, imageUrl: String?) {
+    Row(
+        Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ) {
         Box(
             modifier = Modifier
                 .size(150.dp)
                 .clip(RoundedCornerShape(10.dp))
                 .background(BlackPost)
         ) {
-            if (!imageUrl.isNullOrEmpty()) {
-                val painter = rememberAsyncImagePainter(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(imageUrl)
-                        .crossfade(true)
-                        .build()
-                )
+            when {
+                !imageUrl.isNullOrEmpty() -> {
+                    // Mostrar imagen cargada desde el backend
+                    val painter = rememberAsyncImagePainter(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(imageUrl)
+                            .crossfade(true)
+                            .build()
+                    )
 
-                Image(
-                    painter = painter,
-                    contentDescription = "Imagen subida",
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(10.dp),
-                    contentScale = ContentScale.Crop
-                )
+                    Image(
+                        painter = painter,
+                        contentDescription = "Imagen subida",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(10.dp),
+                        contentScale = ContentScale.Crop
+                    )
 
-                if (painter.state is AsyncImagePainter.State.Loading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center),
-                        color = WhitePost
+                    if (painter.state is AsyncImagePainter.State.Loading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.Center),
+                            color = WhitePost
+                        )
+                    }
+                }
+                imageUri != null -> {
+                    // Mostrar imagen local seleccionada
+                    Image(
+                        painter = rememberAsyncImagePainter(imageUri),
+                        contentDescription = "Imagen seleccionada",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(10.dp),
+                        contentScale = ContentScale.Crop
                     )
                 }
-            } else {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(10.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "No hay imagen adjunta", color = WhitePost)
+
+                else -> {
+                    // No hay imagen seleccionada
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "No hay imagen adjunta", color = WhitePost)
+                    }
                 }
             }
         }
@@ -505,8 +525,9 @@ fun PostPhoto(imageUrl: String?) {
 }
 
 
+
 @Composable
-fun BooleanTribe(text: String, private: MutableState<Boolean>) {
+fun BooleanTribe(text: String, crearEventos: MutableState<Boolean>) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -542,13 +563,13 @@ fun BooleanTribe(text: String, private: MutableState<Boolean>) {
                     .height(switchHeight)
                     .clip(RoundedCornerShape(50))
                     .background(Color.Black)
-                    .clickable { private.value = !private.value }
+                    .clickable { crearEventos.value = !crearEventos.value }
             ) {
                 val alignment by animateDpAsState(
-                    targetValue = if (private.value) (switchWidth - thumbWidth) else 0.dp,
+                    targetValue = if (crearEventos.value) (switchWidth - thumbWidth) else 0.dp,
                     label = "Thumb position"
                 )
-
+                Log.d("MyViewModel11", "TribuDTO: ${crearEventos.value}")
                 Box(
                     modifier = Modifier
                         .offset(x = alignment)
@@ -559,7 +580,7 @@ fun BooleanTribe(text: String, private: MutableState<Boolean>) {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = if (private.value) "Sí" else "No",
+                        text = if (crearEventos.value) "Sí" else "No",
                         color = Color.White,
                         fontSize = 12.sp
                     )
@@ -643,44 +664,70 @@ fun Ubicacion(ubicacion: MutableState<String>) {
 fun SaveElement(
     name: MutableState<String>,
     description: MutableState<String>,
-    imageUrl: MutableState<String>,
     selectedCategories: MutableState<List<String>>,
     private: MutableState<Boolean>,
     members: MutableState<Int>,
     dateError: MutableState<Boolean>,
     context: Context,
     viewModel: MyViewModel,
-    ubicacion: MutableState<String>
+    ubicacion: MutableState<String>,
+    crearEventos: MutableState<Boolean>,
+    selectedImageUri: MutableState<Uri?>,
+    uploadedImageUrl: MutableState<String?>
 ) {
     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-        Button(
-            onClick = {
-                Log.d("SaveElement", "Botón presionado")
+        Button(onClick = {
+            if (name.value.isBlank() || description.value.isBlank() || members.value <= 0) {
+                dateError.value = true
+                return@Button
+            }
 
-                if (name.value.isBlank() || description.value.isBlank() || members.value <= 0) {
-                    Log.d("SaveElement", "Validación fallida: Campos vacíos")
-                    dateError.value = true
-                    return@Button
+            val uri = selectedImageUri.value
+
+            if (uri != null) {
+                viewModel.subirImagen(uri, context) { remoteUrl ->
+                    if (remoteUrl != null) {
+                        uploadedImageUrl.value = remoteUrl
+
+                        val createRequest = TribuDTO(
+                            nombre = name.value,
+                            descripcion = description.value,
+                            categorias = selectedCategories.value,
+                            imagenUrl = remoteUrl,  // Aquí usas la URL remota
+                            numeroMaximoMiembros = members.value.takeIf { it > 0 } ?: 10,
+                            esPrivada = private.value,
+                            ubicacion = ubicacion.value,
+                            autorId = viewModel.currentUser.value?.usuarioId ?: 0,
+                            crearEventos = crearEventos.value
+                        )
+
+                        viewModel.createTribe(
+                            context = context,
+                            createRequest = createRequest,
+                            onSuccess = {
+                                Log.d("SaveElement", "Tribu creada con éxito")
+                            },
+                            onError = {
+                                Log.e("SaveElement", "Error al crear tribu: $it")
+                            }
+                        )
+                    } else {
+                        Toast.makeText(context, "Error al subir la imagen", Toast.LENGTH_SHORT).show()
+                    }
                 }
-
-
+            } else {
+                // No hay imagen para subir
                 val createRequest = TribuDTO(
                     nombre = name.value,
                     descripcion = description.value,
                     categorias = selectedCategories.value,
-                    imagenUrl = imageUrl.value,
+                    imagenUrl = "",
                     numeroMaximoMiembros = members.value.takeIf { it > 0 } ?: 10,
                     esPrivada = private.value,
                     ubicacion = ubicacion.value,
-                    autorId = viewModel.currentUser.value?.usuarioId ?: 0
+                    autorId = viewModel.currentUser.value?.usuarioId ?: 0,
+                    crearEventos = crearEventos.value
                 )
-
-                Log.d("SaveElement", "Request construido: $createRequest")
-                Log.d(
-                    "SaveElement",
-                    "Datos enviados: nombre = ${name.value}, descripcion = ${description.value}, categorias = ${selectedCategories.value}, miembros = ${members.value}, esPrivada = ${private.value}"
-                )
-
 
                 viewModel.createTribe(
                     context = context,
@@ -692,9 +739,8 @@ fun SaveElement(
                         Log.e("SaveElement", "Error al crear tribu: $it")
                     }
                 )
-            },
-            modifier = Modifier.padding(top = 16.dp)
-        ) {
+            }
+        }) {
             Text("Crear Tribu", color = Color.White)
         }
     }

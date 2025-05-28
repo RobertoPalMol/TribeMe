@@ -13,8 +13,10 @@ data class Tribe(
     val autorId: String,
     val autorNombre: String,
     val miembros: List<User>,
-    val ubicacion: String
+    val ubicacion: String,
+    val crearEventos: Boolean
 )
+
 data class TribuDTO(
     val nombre: String,
     val descripcion: String,
@@ -23,8 +25,10 @@ data class TribuDTO(
     val numeroMaximoMiembros: Int,
     val esPrivada: Boolean,
     val autorId: Long,
-    val ubicacion: String
+    val ubicacion: String,
+    val crearEventos: Boolean
 )
+
 data class TribuUpdateDTO(
     val tribuId: Long,
     val nombre: String,
@@ -52,12 +56,21 @@ data class AuthResponse(
 data class EventoDTO(
     val eventoId: Long,
     val nombre: String,
-    val descripcion: String?,
+    val descripcion: String,
     val hora: String,
     val lugar: String,
     val fechaCreacion: String,
     val fechaModificacion: String,
-    val creadorId: Long
+    val creadorId: String
+)
+
+data class CreateEventoDTO(
+    val nombre: String,
+    val descripcion: String?,
+    val hora: String,
+    val lugar: String,
+    val tribuId: Long,
+    val creadorId: String
 )
 
 data class ImageUploadResponse(

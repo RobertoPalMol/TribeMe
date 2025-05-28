@@ -24,14 +24,21 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,15 +54,13 @@ import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import coil.request.ErrorResult
 import coil.request.ImageRequest
-import coil.request.SuccessResult
+import com.robpalmol.tribeme.DataBase.Models.CreateEventoDTO
 import com.robpalmol.tribeme.DataBase.Models.EventoDTO
-import com.robpalmol.tribeme.DataBase.Models.ImageUploadResponse
 import com.robpalmol.tribeme.DataBase.Models.Tribe
 import com.robpalmol.tribeme.DataBase.Models.User
-import com.robpalmol.tribeme.DataBase.RetrofitInstance
 import com.robpalmol.tribeme.R
 import com.robpalmol.tribeme.ViewModels.MyViewModel
 import com.robpalmol.tribeme.ui.theme.BlackPost
@@ -74,14 +79,16 @@ fun TribeElement(
     context: Context
 ) {
 
-    fun obtenerUrlImagen(imagenDb: String): String {
-        val baseUrl = RetrofitInstance.BASE_URL + "/api/tribus/imagenes/"
-        val fileName = imagenDb.substringAfterLast("/")
-        return baseUrl + fileName
+    val viewModel: MyViewModel = viewModel()
+    val token = SessionManager(context).getToken()
+    val context = LocalContext.current
+
+    val urlImagen = viewModel.obtenerUrlImagen(tribe.imagenUrl)
+
+    val imageLoader = remember {
+        viewModel.createAuthenticatedImageLoader(context, token.toString())
     }
 
-    val urlImagen = obtenerUrlImagen(tribe.imagenUrl)
-    val token = SessionManager(context).getToken()
 
     Row(
         modifier = Modifier
@@ -132,27 +139,18 @@ fun TribeElement(
                                 .padding(10.dp)
                         ) {
                             AsyncImage(
-                                model = ImageRequest.Builder(LocalContext.current)
+                                model = ImageRequest.Builder(context)
                                     .data(urlImagen)
-                                    .addHeader("Authorization", "Bearer $token")
                                     .crossfade(true)
-                                    .listener(
-                                        object : ImageRequest.Listener {
-                                            override fun onError(request: ImageRequest, result: ErrorResult) {
-                                                Log.e("AsyncImage", "Error al cargar la imagen", result.throwable)
-                                            }
-                                            override fun onSuccess(request: ImageRequest, result: SuccessResult) {
-                                                Log.d("AsyncImage", "Imagen cargada correctamente")
-                                            }
-                                        }
-                                    )
                                     .build(),
                                 contentDescription = "Imagen de la tribu",
+                                imageLoader = imageLoader,
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .clip(RoundedCornerShape(20.dp)),
                                 contentScale = ContentScale.Crop
                             )
+
                             Log.d("TribeElement", "Imagen URL: $urlImagen")
                             Log.d("TribeElement", "Imagen URL original: ${tribe.imagenUrl}")
                         }
@@ -163,8 +161,9 @@ fun TribeElement(
                             .weight(1f)
                             .padding(8.dp)
                     ) {
-                        Spacer(modifier = Modifier.weight(1f))
+                        Spacer(modifier = Modifier.weight(0.7f))
 
+                        Text("Descripción:", style = TextStyle(fontWeight = Bold))
                         Text(
                             text = tribe.descripcion,
                             maxLines = 5,
@@ -195,7 +194,6 @@ fun TribeElement(
         }
     }
 }
-
 
 
 @Composable
@@ -244,25 +242,43 @@ fun TribeDetailScreen(tribe: Tribe, viewModel: MyViewModel) {
     val currentUser by viewModel.currentUser.collectAsState()
     val eventos by viewModel.eventos.collectAsState()
     val context = LocalContext.current
+    var showDialog by remember { mutableStateOf(false) }
+
 
     LaunchedEffect(tribe.tribuId) {
-        viewModel.getAllEventos(context)
+        viewModel.getEventosPorTribu(context, tribe.tribuId)
     }
+
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
             .background(BlackPost)
     ) {
         Spacer(modifier = Modifier.height(40.dp))
 
-        Row(modifier = Modifier.padding(horizontal = 20.dp)) {
+        Row {
+            Spacer(modifier = Modifier.width(20.dp))
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(Color.LightGray),
+                contentAlignment = Alignment.Center
+            ) {
+                // AsyncImage(model = user.avatarUrl, contentDescription = null)
+                Text(
+                    text = currentUser?.nombre?.firstOrNull()?.uppercase() ?: "",
+                    color = Color.White,
+                    fontSize = 20.sp,
+                    fontWeight = Bold
+                )
+            }
+            Spacer(modifier = Modifier.width(20.dp))
             Text(
-                text = currentUser?.nombre ?: "usuario",
+                text = currentUser?.nombre ?: "Bienvenido",
                 color = Color.White,
-                fontSize = 26.sp,
-                fontWeight = FontWeight.SemiBold
+                fontSize = 32.sp
             )
         }
 
@@ -273,6 +289,7 @@ fun TribeDetailScreen(tribe: Tribe, viewModel: MyViewModel) {
                 .fillMaxSize()
                 .clip(RoundedCornerShape(24.dp))
                 .background(Brush.verticalGradient(DifuminatedBackground))
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
             Column(
@@ -375,6 +392,104 @@ fun TribeDetailScreen(tribe: Tribe, viewModel: MyViewModel) {
                             TribeEventDetails(evento = evento)
                         }
                     }
+
+                    val puedeCrearEvento = remember(tribe, currentUser) {
+                        tribe.crearEventos && tribe.miembros.any { it.usuarioId == currentUser?.usuarioId } ||
+                                (!tribe.crearEventos && currentUser?.usuarioId.toString() == tribe.autorId)
+                    }
+
+                    if (puedeCrearEvento) {
+                        Button(
+                            onClick = {
+                                showDialog = true
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = PinkPost)
+                        ) {
+                            Text("Crear evento", color = Color.White)
+                        }
+                    }
+                    if (showDialog) {
+                        var nombre by remember { mutableStateOf("") }
+                        var descripcion by remember { mutableStateOf("") }
+                        var hora by remember { mutableStateOf("") }
+                        var lugar by remember { mutableStateOf("") }
+
+                        AlertDialog(
+                            onDismissRequest = { showDialog = false },
+                            title = { Text("Nuevo evento") },
+                            text = {
+                                Column {
+                                    OutlinedTextField(
+                                        value = nombre,
+                                        onValueChange = { nombre = it },
+                                        label = { Text("Nombre") }
+                                    )
+                                    OutlinedTextField(
+                                        value = descripcion,
+                                        onValueChange = { descripcion = it },
+                                        label = { Text("Descripción") }
+                                    )
+                                    OutlinedTextField(
+                                        value = hora,
+                                        onValueChange = { hora = it },
+                                        label = { Text("Hora (formato 00:00)") }
+                                    )
+                                    OutlinedTextField(
+                                        value = lugar,
+                                        onValueChange = { lugar = it },
+                                        label = { Text("Lugar") }
+                                    )
+                                }
+                            },
+                            confirmButton = {
+                                Button(
+                                    onClick = {
+                                        val horaRegex =
+                                            Regex("^([01]\\d|2[0-3]):([0-5]\\d)$") // Formato HH:mm 24h
+                                        if (!horaRegex.matches(hora)) {
+                                            Toast.makeText(
+                                                context,
+                                                "Formato de hora inválido (usa HH:mm)",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            return@Button
+                                        }
+
+                                        currentUser?.let { user ->
+                                            viewModel.crearEvento(
+                                                context = context,
+                                                CreateEventoDTO(
+                                                    nombre = nombre,
+                                                    descripcion = descripcion,
+                                                    hora = hora,
+                                                    lugar = lugar,
+                                                    tribuId = tribe.tribuId,
+                                                    creadorId = user.usuarioId.toString()
+                                                )
+                                            )
+                                            Toast.makeText(
+                                                context,
+                                                "Evento creado correctamente",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            showDialog = false
+                                        } ?: Toast.makeText(
+                                            context,
+                                            "Usuario no autenticado",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                ) {
+                                    Text("Guardar")
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { showDialog = false }) {
+                                    Text("Cancelar")
+                                }
+                            }
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -393,8 +508,10 @@ fun TribeDetailScreen(tribe: Tribe, viewModel: MyViewModel) {
                     Spacer(modifier = Modifier.height(8.dp))
 
                     //Lista de participantes de la tribu
-                    LazyColumn ( modifier = Modifier.height(300.dp),
-                        verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                    LazyColumn(
+                        modifier = Modifier.height(300.dp),
+                        verticalArrangement = Arrangement.spacedBy(5.dp)
+                    ) {
 
                         Log.d("TribeDetailScreen", "Participantes: ${tribe.miembros}")
 
@@ -405,7 +522,7 @@ fun TribeDetailScreen(tribe: Tribe, viewModel: MyViewModel) {
                     }
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Row (Modifier.align(alignment = Alignment.CenterHorizontally)) {
+                    Row(Modifier.align(alignment = Alignment.CenterHorizontally)) {
                         //boton de unirse a la tribu
                         currentUser?.let { user ->
                             val yaEsMiembro = tribe.miembros.any { it.usuarioId == user.usuarioId }
@@ -415,14 +532,50 @@ fun TribeDetailScreen(tribe: Tribe, viewModel: MyViewModel) {
                             Log.d("DEBUG", "Ya es miembro? $yaEsMiembro")
 
                             if (!yaEsMiembro) {
-                                UnirseTribuButton(
-                                    context = context,
-                                    viewModel = viewModel,
-                                    tribu = tribe,
-                                    usuarioActual = user,
-                                    miembros = tribe.miembros
-                                )
-                            } else {
+                                val miembrosActuales = tribe.miembros.size
+                                val limiteMiembros = tribe.numeroMaximoMiembros
+                                val cupoLleno = miembrosActuales >= limiteMiembros
+
+                                when {
+                                    tribe.esPrivada -> {
+                                        Button(
+                                            onClick = {Toast.makeText(context, "Esta tribu es privada", Toast.LENGTH_SHORT).show()},
+                                            enabled = false,
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = Color.Gray,
+                                                disabledContainerColor = Color.LightGray,
+                                                contentColor = Color.White,
+                                                disabledContentColor = Color.DarkGray
+                                            )
+                                        ) {
+                                            Text("Tribu privada")
+                                        }
+                                    }
+                                    cupoLleno -> {
+                                        Button(
+                                            onClick = {Toast.makeText(context, "Esta tribu está llena", Toast.LENGTH_SHORT).show()},
+                                            enabled = false,
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = Color.Gray,
+                                                disabledContainerColor = Color.LightGray,
+                                                contentColor = Color.White,
+                                                disabledContentColor = Color.DarkGray
+                                            )
+                                        ) {
+                                            Text("Tribu llena")
+                                        }
+                                    }
+                                    else -> {
+                                        UnirseTribuButton(
+                                            context = context,
+                                            viewModel = viewModel,
+                                            tribu = tribe,
+                                            usuarioActual = user,
+                                            miembros = tribe.miembros
+                                        )
+                                    }
+                                }
+                            }else if(tribe.autorId != user.usuarioId.toString()){
                                 SalirDeTribuButton(
                                     context = context,
                                     viewModel = viewModel,
@@ -450,7 +603,8 @@ fun TribeEventDetails(evento: EventoDTO) {
     ) {
 
         Spacer(modifier = Modifier.height(4.dp))
-        Text(text = evento.nombre, color = BlackPost)
+        Text(text = evento.nombre, color = BlackPost, style = TextStyle(fontWeight = Bold))
+        Text(text = evento.descripcion, color = BlackPost)
         Text(text = "Hora: ${evento.hora}", color = BlackPost)
         Text(text = "Lugar: ${evento.lugar}", color = BlackPost)
     }

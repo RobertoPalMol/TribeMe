@@ -1,5 +1,7 @@
 package com.robpalmol.tribeme.Screens
 
+import android.annotation.SuppressLint
+import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
@@ -40,6 +42,7 @@ import com.robpalmol.tribeme.ui.theme.BlackPost
 import com.robpalmol.tribeme.ui.theme.DifuminatedBackground
 
 
+@SuppressLint("UnrememberedMutableState")
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CreateTribe(
@@ -54,6 +57,9 @@ fun CreateTribe(
     val private1 = remember { mutableStateOf(true) }
     val dateError = remember { mutableStateOf(false) }
     val ubicacion = rememberSaveable { mutableStateOf("") }
+    val crearEventos = remember { mutableStateOf(false) }
+    val selectedImageUri = mutableStateOf<Uri?>(null)
+    val uploadedImageUrl = mutableStateOf<String?>(null)
 
 
     val context = LocalContext.current
@@ -95,26 +101,32 @@ fun CreateTribe(
                 )
             }
             item { AddPhoto(
-                imageUrl = viewModel.imagenUrl,
+                selectedImageUri = selectedImageUri,
+                imageUrl = imageUrl,
                 onImageSelected = { uri ->
-                    viewModel.subirImagen(uri, context)
-                }
-            ) }
-            item { PostPhoto(imageUrl = imageUrl.value)}
+                    selectedImageUri.value = uri
+                })
+            }
+            item { PostPhoto(
+                imageUri = selectedImageUri.value,
+                imageUrl = imageUrl.value
+            )}
             item { BooleanTribe("Tribu privada", private1) }
-            item { BooleanTribe("Los miembros podrán crear eventos", remember { mutableStateOf(true) }) }
+            item { BooleanTribe("Los miembros podrán crear eventos", crearEventos) }
             item {
                 SaveElement(
                     name = name,
                     description = description,
-                    imageUrl = viewModel.imagenUrl,
                     selectedCategories = selectedCategories,
                     private = private1,
                     members = members,
                     dateError = dateError,
                     context = context,
                     viewModel = viewModel,
-                    ubicacion = ubicacion
+                    ubicacion = ubicacion,
+                    crearEventos = crearEventos,
+                    selectedImageUri,
+                    uploadedImageUrl
                 )
             }
             item { Spacer(modifier = Modifier.height(120.dp)) }
