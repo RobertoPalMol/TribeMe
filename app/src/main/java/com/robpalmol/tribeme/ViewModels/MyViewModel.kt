@@ -286,9 +286,12 @@ class MyViewModel : ViewModel() {
                         onResult(responseBody?.imageUrl) // Pasa la URL remota o null si fallo
                     } else {
                         onResult(null)
+                        Log.e("SaveElement", "Error al subir la imagen. Código: ${response.code()}, mensaje: ${response.message()}")
+
                     }
                 } catch (e: Exception) {
                     onResult(null)
+                    Log.e("SaveElement", "Error al subir la imagen ${e.message}", e)
                 }
             } else {
                 onResult(null)

@@ -713,6 +713,7 @@ fun SaveElement(
                         )
                     } else {
                         Toast.makeText(context, "Error al subir la imagen", Toast.LENGTH_SHORT).show()
+                        Log.e("SaveElement", "Error al subir la imagen")
                     }
                 }
             } else {
