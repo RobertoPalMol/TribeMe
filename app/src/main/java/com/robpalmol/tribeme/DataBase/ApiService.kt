@@ -36,6 +36,12 @@ interface ApiService {
     @GET("api/tribus")
     suspend fun getAllTribes(): List<Tribe>
 
+    @GET("api/eventos")
+    suspend fun getAllEvents(): List<EventoDTO>
+
+    @GET("api/eventos/{id}")
+    suspend fun getEventById(@Path("id") id: Long): EventoDTO
+
     @GET("api/tribus/mis-tribus")
     suspend fun getMyTribes(): List<Tribe>
 
@@ -57,6 +63,18 @@ interface ApiService {
     @DELETE("api/tribus/{tribuId}/salir/{usuarioId}")
     suspend fun salirDeTribu(
         @Path("tribuId") tribuId: Long,
+        @Path("usuarioId") usuarioId: Long
+    ): Response<Unit>
+
+    @POST("api/eventos/{eventoId}/unirse/{usuarioId}")
+    suspend fun unirseAEvento(
+        @Path("eventoId") eventoId: Long,
+        @Path("usuarioId") usuarioId: Long
+    ): Response<Unit>
+
+    @DELETE("api/eventos/{eventoId}/salir/{usuarioId}")
+    suspend fun salirDeEvento(
+        @Path("eventoId") eventoId: Long,
         @Path("usuarioId") usuarioId: Long
     ): Response<Unit>
 

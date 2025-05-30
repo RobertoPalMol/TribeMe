@@ -1,6 +1,8 @@
 package com.robpalmol.tribeme.Components
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.net.Uri
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -276,6 +278,7 @@ fun CloseSesion(
     }
 }
 
+@SuppressLint("UnrememberedMutableState")
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun EditTribe(
@@ -287,10 +290,11 @@ fun EditTribe(
     val description = rememberSaveable { mutableStateOf(tribeData.descripcion) }
     val members = rememberSaveable { mutableStateOf(tribeData.numeroMaximoMiembros) }
     val selectedCategories = rememberSaveable { mutableStateOf(tribeData.categorias) }
-    val imageUrl = rememberSaveable { mutableStateOf("") }
     val private1 = remember { mutableStateOf(tribeData.esPrivada) }
     val ubicacion = rememberSaveable { mutableStateOf(tribeData.ubicacion) }
 
+    val selectedImageUri = rememberSaveable { mutableStateOf<Uri?>(null) }
+    val uploadedImageUrl = rememberSaveable { mutableStateOf<String?>(null) }
     val context = LocalContext.current
 
     Column(
@@ -329,7 +333,21 @@ fun EditTribe(
                     }
                 )
             }
-            // item { AddPhoto(imageUrl) }
+
+            item {
+                AddPhoto(
+                    selectedImageUri = selectedImageUri,
+                    onImageSelected = { uri -> selectedImageUri.value = uri }
+                )
+            }
+
+            item {
+                PostPhoto(
+                    imageUri = selectedImageUri.value,
+                    imageUrl = uploadedImageUrl.value
+                )
+            }
+
             item { BooleanTribe("Tribu privada", private1) }
             item { BooleanTribe("Los miembros podrán crear eventos", remember { mutableStateOf(true) }) }
 
@@ -337,7 +355,8 @@ fun EditTribe(
                 UpdateElement(
                     name = name,
                     description = description,
-                    imageUrl = imageUrl,
+                    selectedImageUri = selectedImageUri,
+                    uploadedImageUrl = uploadedImageUrl,
                     selectedCategories = selectedCategories,
                     private = private1,
                     members = members,
@@ -357,7 +376,8 @@ fun EditTribe(
 fun UpdateElement(
     name: MutableState<String>,
     description: MutableState<String>,
-    imageUrl: MutableState<String>,
+    selectedImageUri: MutableState<Uri?>,
+    uploadedImageUrl: MutableState<String?>,
     selectedCategories: MutableState<List<String>>,
     private: MutableState<Boolean>,
     members: MutableState<Int>,
@@ -368,24 +388,47 @@ fun UpdateElement(
 ) {
     Button(
         onClick = {
-            if (name.value.isBlank() || description.value.isBlank() || selectedCategories.value.isEmpty()) {
+            if (name.value.isBlank() || description.value.isBlank()) {
                 Toast.makeText(context, "Por favor completa todos los campos obligatorios", Toast.LENGTH_SHORT).show()
                 return@Button
             }
 
-            val request = TribuUpdateDTO(
-                tribuId = tribeId,
-                nombre = name.value,
-                descripcion = description.value,
-                categorias = selectedCategories.value,
-                imagenUrl = imageUrl.value.ifBlank { "" },
-                numeroMaximoMiembros = members.value,
-                esPrivada = private.value,
-                ubicacion = ubicacion.value,
-            )
+            // Si se ha seleccionado una nueva imagen, súbela
+            if (selectedImageUri.value != null) {
+                viewModel.subirImagen(selectedImageUri.value!!, context) { url ->
+                    uploadedImageUrl.value = url
 
-            viewModel.updateTribe(tribeId, request, context)
-            Toast.makeText(context, "Tribu actualizada", Toast.LENGTH_SHORT).show()
+                    // Una vez subida, continuar con el update
+                    val request = TribuUpdateDTO(
+                        tribuId = tribeId,
+                        nombre = name.value,
+                        descripcion = description.value,
+                        categorias = selectedCategories.value,
+                        imagenUrl = uploadedImageUrl.value ?: "",
+                        numeroMaximoMiembros = members.value,
+                        esPrivada = private.value,
+                        ubicacion = ubicacion.value,
+                    )
+
+                    viewModel.updateTribe(tribeId, request, context)
+                    Toast.makeText(context, "Tribu actualizada", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+
+                val request = TribuUpdateDTO(
+                    tribuId = tribeId,
+                    nombre = name.value,
+                    descripcion = description.value,
+                    categorias = selectedCategories.value,
+                    imagenUrl = uploadedImageUrl.value ?: "",
+                    numeroMaximoMiembros = members.value,
+                    esPrivada = private.value,
+                    ubicacion = ubicacion.value,
+                )
+
+                viewModel.updateTribe(tribeId, request, context)
+                Toast.makeText(context, "Tribu actualizada", Toast.LENGTH_SHORT).show()
+            }
         },
         modifier = Modifier
             .fillMaxWidth()

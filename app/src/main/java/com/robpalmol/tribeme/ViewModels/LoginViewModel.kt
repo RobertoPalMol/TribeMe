@@ -42,6 +42,9 @@ class LoginViewModel : ViewModel() {
                     _error.value = "Credenciales inválidas"
                 }
             } catch (e: Exception) {
+                if (e.message == "HTTP 401 Unauthorized") {
+                    _error.value = "Credenciales inválidas"
+                }
                 _error.value = "Error al iniciar sesión: ${e.message}"
             }
         }

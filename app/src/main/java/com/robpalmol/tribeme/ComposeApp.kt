@@ -25,15 +25,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -45,8 +47,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.robpalmol.tribeme.Components.EditTribe
+import com.robpalmol.tribeme.Components.EventExtended
 import com.robpalmol.tribeme.Components.TribeDetailScreen
-import com.robpalmol.tribeme.DataBase.Models.Tribe
 import com.robpalmol.tribeme.Screens.CreateTribe
 import com.robpalmol.tribeme.Screens.HomeScreen
 import com.robpalmol.tribeme.Screens.LogIn
@@ -84,12 +86,13 @@ fun ComposeApp() {
         Route("Inicio", R.drawable.home_outlined, R.drawable.home_solid),
         Route("Buscar", R.drawable.magnifying_glass_outlined, R.drawable.magnifying_glass_solid),
         Route("Crear", R.drawable.plus_square_outlined, R.drawable.plus_square_solid),
-        Route("Mis Tribus", R.drawable.ic_launcher_background, R.drawable.ic_launcher_foreground),
+        Route("Mis Tribus", R.drawable.tribeme_image, R.drawable.tribeme_image),
         Route("Usuario", R.drawable.profile_outlined, R.drawable.profile_outlined),
         Route("detail/{tribeId}", showInMenu = false, showMenu = false),
         Route("Login", showInMenu = false, showMenu = false),
         Route("Register", showInMenu = false, showMenu = false),
         Route("Editar/{tribeId}", showInMenu = false, showMenu = false),
+        Route("event/{eventId}", showInMenu = false, showMenu = false),
     )
 
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
@@ -155,6 +158,33 @@ fun ComposeApp() {
                     }
                 }
             }
+            composable("event/{eventId}") { backStackEntry ->
+                val eventId = backStackEntry.arguments?.getString("eventId")?.toLongOrNull()
+                val viewModel: MyViewModel = viewModel()
+                val eventoSeleccionado by viewModel.eventoSeleccionado
+                val context = LocalContext.current
+
+                if (eventId != null) {
+
+                    LaunchedEffect(eventId) {
+                        viewModel.getEventById(context = context, id = eventId)
+                    }
+                    if (eventoSeleccionado != null) {
+                        EventExtended(eventoSeleccionado!!, viewModel)
+                    } else {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("Cargando Evento...", color = WhitePost)
+                        }
+                    }
+                } else {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("ID de evento inválido")
+                    }
+                }
+            }
             composable(route = "Buscar") {
                 SearchScreen(viewModel,
                     onItemClick = { selectedTribe ->
@@ -179,9 +209,12 @@ fun ComposeApp() {
             composable(route = "Mis Tribus") {
                 MyDataScreen(onItemClick = { selectedTribe ->
                     navController.navigate("detail/${selectedTribe.tribuId}")
-                })
+                },
+                    onEventoClick = { evento ->
+                        navController.navigate("event/${evento.eventoId}")
+                    })
             }
-            composable(route = "Usuario") {backStackEntry ->
+            composable(route = "Usuario") { backStackEntry ->
                 val reloadKey = backStackEntry.destination.route + System.currentTimeMillis()
                 ProfileScreen(navController, viewModel, reloadKey)
             }

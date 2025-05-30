@@ -90,7 +90,7 @@ fun LogIn(navController: NavHostController, loginViewModel: LoginViewModel = vie
                 ) {
                     Spacer(modifier = Modifier.width(100.dp))
                     Image(
-                        painterResource(id = R.drawable.eye_show),
+                        painterResource(id = R.drawable.tribeme_image),
                         contentDescription = "",
                         modifier = Modifier.size(200.dp, 200.dp)
                     )
@@ -152,7 +152,7 @@ fun Register(navController2: NavHostController) {
                 ) {
                     Spacer(modifier = Modifier.width(110.dp))
                     Image(
-                        painterResource(id = R.drawable.eye_show),
+                        painterResource(id = R.drawable.tribeme_image),
                         contentDescription = "",
                         modifier = Modifier.size(180.dp, 104.dp)
                     )

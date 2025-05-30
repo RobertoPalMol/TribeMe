@@ -408,14 +408,17 @@ fun CategoryButton(
 }
 
 @Composable
-fun AddPhoto(selectedImageUri: MutableState<Uri?>,imageUrl: MutableState<String>, onImageSelected: (Uri) -> Unit) {
+fun AddPhoto(
+    selectedImageUri: MutableState<Uri?>,
+    onImageSelected: (Uri) -> Unit
+) {
     val context = LocalContext.current
 
     val cropImage = rememberLauncherForActivityResult(CropImageContract()) { result ->
         if (result.isSuccessful) {
             val croppedImageUri = result.uriContent
             croppedImageUri?.let { uri ->
-                imageUrl.value = uri.toString()
+                selectedImageUri.value = uri
                 onImageSelected(uri)
             }
         } else {
@@ -458,6 +461,7 @@ fun AddPhoto(selectedImageUri: MutableState<Uri?>,imageUrl: MutableState<String>
     }
 }
 
+
 @Composable
 fun PostPhoto(imageUri: Uri?, imageUrl: String?) {
     Row(
@@ -471,8 +475,19 @@ fun PostPhoto(imageUri: Uri?, imageUrl: String?) {
                 .background(BlackPost)
         ) {
             when {
+                imageUri != null -> {
+                    // Imagen local aún no subida
+                    Image(
+                        painter = rememberAsyncImagePainter(imageUri),
+                        contentDescription = "Imagen seleccionada",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(10.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                }
                 !imageUrl.isNullOrEmpty() -> {
-                    // Mostrar imagen cargada desde el backend
+                    // Imagen cargada desde el backend
                     val painter = rememberAsyncImagePainter(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(imageUrl)
@@ -496,33 +511,11 @@ fun PostPhoto(imageUri: Uri?, imageUrl: String?) {
                         )
                     }
                 }
-                imageUri != null -> {
-                    // Mostrar imagen local seleccionada
-                    Image(
-                        painter = rememberAsyncImagePainter(imageUri),
-                        contentDescription = "Imagen seleccionada",
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(10.dp),
-                        contentScale = ContentScale.Crop
-                    )
-                }
-
-                else -> {
-                    // No hay imagen seleccionada
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(10.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = "No hay imagen adjunta", color = WhitePost)
-                    }
-                }
             }
         }
     }
 }
+
 
 
 
@@ -675,74 +668,86 @@ fun SaveElement(
     selectedImageUri: MutableState<Uri?>,
     uploadedImageUrl: MutableState<String?>
 ) {
-    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-        Button(onClick = {
-            if (name.value.isBlank() || description.value.isBlank() || members.value <= 0) {
-                dateError.value = true
-                return@Button
-            }
-
-            val uri = selectedImageUri.value
-
-            if (uri != null) {
-                viewModel.subirImagen(uri, context) { remoteUrl ->
-                    if (remoteUrl != null) {
-                        uploadedImageUrl.value = remoteUrl
-
-                        val createRequest = TribuDTO(
-                            nombre = name.value,
-                            descripcion = description.value,
-                            categorias = selectedCategories.value,
-                            imagenUrl = remoteUrl,  // Aquí usas la URL remota
-                            numeroMaximoMiembros = members.value.takeIf { it > 0 } ?: 10,
-                            esPrivada = private.value,
-                            ubicacion = ubicacion.value,
-                            autorId = viewModel.currentUser.value?.usuarioId ?: 0,
-                            crearEventos = crearEventos.value
-                        )
-
-                        viewModel.createTribe(
-                            context = context,
-                            createRequest = createRequest,
-                            onSuccess = {
-                                Log.d("SaveElement", "Tribu creada con éxito")
-                            },
-                            onError = {
-                                Log.e("SaveElement", "Error al crear tribu: $it")
-                            }
-                        )
-                    } else {
-                        Toast.makeText(context, "Error al subir la imagen", Toast.LENGTH_SHORT).show()
-                        Log.e("SaveElement", "Error al subir la imagen")
-                    }
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Button(
+            onClick = {
+                if (name.value.isBlank() || description.value.isBlank() || members.value <= 0) {
+                    dateError.value = true
+                    return@Button
                 }
-            } else {
-                // No hay imagen para subir
-                val createRequest = TribuDTO(
-                    nombre = name.value,
-                    descripcion = description.value,
-                    categorias = selectedCategories.value,
-                    imagenUrl = "",
-                    numeroMaximoMiembros = members.value.takeIf { it > 0 } ?: 10,
-                    esPrivada = private.value,
-                    ubicacion = ubicacion.value,
-                    autorId = viewModel.currentUser.value?.usuarioId ?: 0,
-                    crearEventos = crearEventos.value
-                )
 
-                viewModel.createTribe(
-                    context = context,
-                    createRequest = createRequest,
-                    onSuccess = {
-                        Log.d("SaveElement", "Tribu creada con éxito")
-                    },
-                    onError = {
-                        Log.e("SaveElement", "Error al crear tribu: $it")
+                val uri = selectedImageUri.value
+
+                if (uri != null) {
+                    viewModel.subirImagen(uri, context) { remoteUrl ->
+                        if (remoteUrl != null) {
+                            uploadedImageUrl.value = remoteUrl
+
+                            val createRequest = TribuDTO(
+                                nombre = name.value,
+                                descripcion = description.value,
+                                categorias = selectedCategories.value,
+                                imagenUrl = remoteUrl,
+                                numeroMaximoMiembros = members.value.takeIf { it > 0 } ?: 10,
+                                esPrivada = private.value,
+                                ubicacion = ubicacion.value,
+                                autorId = viewModel.currentUser.value?.usuarioId ?: 0,
+                                crearEventos = crearEventos.value
+                            )
+
+                            viewModel.createTribe(
+                                context = context,
+                                createRequest = createRequest,
+                                onSuccess = {
+                                    Toast.makeText(context, "Tribu creada", Toast.LENGTH_SHORT).show()
+                                    Log.d("SaveElement", "Tribu creada con éxito")
+                                },
+                                onError = {
+                                    Toast.makeText(context, "Error al crear la Tribu", Toast.LENGTH_SHORT).show()
+                                    Log.e("SaveElement", "Error al crear tribu: $it")
+                                }
+                            )
+                        } else {
+                            Toast.makeText(context, "Error al subir la imagen", Toast.LENGTH_SHORT).show()
+                            Log.e("SaveElement", "Error al subir la imagen")
+                        }
                     }
-                )
-            }
-        }) {
+                } else {
+                    // No hay imagen para subir
+                    val createRequest = TribuDTO(
+                        nombre = name.value,
+                        descripcion = description.value,
+                        categorias = selectedCategories.value,
+                        imagenUrl = "",
+                        numeroMaximoMiembros = members.value.takeIf { it > 0 } ?: 10,
+                        esPrivada = private.value,
+                        ubicacion = ubicacion.value,
+                        autorId = viewModel.currentUser.value?.usuarioId ?: 0,
+                        crearEventos = crearEventos.value
+                    )
+
+                    viewModel.createTribe(
+                        context = context,
+                        createRequest = createRequest,
+                        onSuccess = {
+                            Toast.makeText(context, "Tribu creada", Toast.LENGTH_SHORT).show()
+                            Log.d("SaveElement", "Tribu creada con éxito")
+                        },
+                        onError = {
+                            Toast.makeText(context, "Error al crear la Tribu", Toast.LENGTH_SHORT).show()
+                            Log.e("SaveElement", "Error al crear tribu: $it")
+                        }
+                    )
+                }
+            },
+            colors = ButtonDefaults.buttonColors(containerColor = BluePost),
+            modifier = Modifier.height(60.dp)
+        ) {
             Text("Crear Tribu", color = Color.White)
         }
     }
 }
+

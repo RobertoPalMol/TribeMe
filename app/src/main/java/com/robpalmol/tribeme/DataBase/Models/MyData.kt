@@ -21,7 +21,7 @@ data class TribuDTO(
     val nombre: String,
     val descripcion: String,
     val imagenUrl: String,
-    val categorias: List<String>,
+    val categorias: List<String?>,
     val numeroMaximoMiembros: Int,
     val esPrivada: Boolean,
     val autorId: Long,
@@ -61,7 +61,8 @@ data class EventoDTO(
     val lugar: String,
     val fechaCreacion: String,
     val fechaModificacion: String,
-    val creadorId: String
+    val creadorId: String,
+    val miembros: List<User>
 )
 
 data class CreateEventoDTO(

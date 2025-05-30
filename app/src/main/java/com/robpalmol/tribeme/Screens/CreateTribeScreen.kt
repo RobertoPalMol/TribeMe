@@ -53,14 +53,13 @@ fun CreateTribe(
     val description = rememberSaveable { mutableStateOf("") }
     val members = rememberSaveable { mutableStateOf(25) }
     val selectedCategories = rememberSaveable { mutableStateOf(listOf<String>()) }
-    val imageUrl = viewModel.imagenUrl
     val private1 = remember { mutableStateOf(true) }
     val dateError = remember { mutableStateOf(false) }
     val ubicacion = rememberSaveable { mutableStateOf("") }
     val crearEventos = remember { mutableStateOf(false) }
-    val selectedImageUri = mutableStateOf<Uri?>(null)
-    val uploadedImageUrl = mutableStateOf<String?>(null)
 
+    val selectedImageUri = rememberSaveable { mutableStateOf<Uri?>(null) }
+    val uploadedImageUrl = rememberSaveable { mutableStateOf<String?>(null) }
 
     val context = LocalContext.current
 
@@ -92,6 +91,7 @@ fun CreateTribe(
             item { TribeDescription(description = description) }
             item { Ubicacion(ubicacion) }
             item { MaxMembers(members = members) }
+
             item {
                 CategoriasCarrusel(
                     selectedCategories = selectedCategories,
@@ -100,19 +100,24 @@ fun CreateTribe(
                     }
                 )
             }
-            item { AddPhoto(
-                selectedImageUri = selectedImageUri,
-                imageUrl = imageUrl,
-                onImageSelected = { uri ->
-                    selectedImageUri.value = uri
-                })
+
+            item {
+                AddPhoto(
+                    selectedImageUri = selectedImageUri,
+                    onImageSelected = { uri -> selectedImageUri.value = uri }
+                )
             }
-            item { PostPhoto(
-                imageUri = selectedImageUri.value,
-                imageUrl = imageUrl.value
-            )}
+
+            item {
+                PostPhoto(
+                    imageUri = selectedImageUri.value,
+                    imageUrl = uploadedImageUrl.value
+                )
+            }
+
             item { BooleanTribe("Tribu privada", private1) }
             item { BooleanTribe("Los miembros podrán crear eventos", crearEventos) }
+
             item {
                 SaveElement(
                     name = name,
@@ -125,10 +130,11 @@ fun CreateTribe(
                     viewModel = viewModel,
                     ubicacion = ubicacion,
                     crearEventos = crearEventos,
-                    selectedImageUri,
-                    uploadedImageUrl
+                    selectedImageUri = selectedImageUri,
+                    uploadedImageUrl = uploadedImageUrl
                 )
             }
+
             item { Spacer(modifier = Modifier.height(120.dp)) }
         }
     }

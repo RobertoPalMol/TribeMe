@@ -11,7 +11,7 @@ object RetrofitInstance {
     // Backend URLs
 
     //Local
-    //const val BASE_URL = "http://192.168.0.17:8081"
+    const val BASE_URL = "http://192.168.0.17:8081"
 
     //render
     //private const val BASE_URL = "https://tribeme-backend.onrender.com"
@@ -26,7 +26,7 @@ object RetrofitInstance {
     //private const val BASE_URL = "https://tribemebackend-production.up.railway.app"
 
     //aws vm
-    const val BASE_URL ="http://56.228.33.92:8081"
+    //const val BASE_URL ="http://56.228.33.92:8081"
 
     // Inicializar Retrofit con el Contexto disponible
     fun getRetrofitInstance(context: Context): Retrofit {

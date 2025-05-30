@@ -93,7 +93,7 @@ fun TribeElement(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(300.dp)
+            .height(320.dp)
             .padding(10.dp)
             .background(WhitePost, shape = RoundedCornerShape(20.dp))
             .clickable { onClick() }
@@ -150,6 +150,7 @@ fun TribeElement(
                                     .clip(RoundedCornerShape(20.dp)),
                                 contentScale = ContentScale.Crop
                             )
+                            Log.d("TribeElement", "Tribu: $urlImagen")
 
                             Log.d("TribeElement", "Imagen URL: $urlImagen")
                             Log.d("TribeElement", "Imagen URL original: ${tribe.imagenUrl}")
@@ -243,7 +244,13 @@ fun TribeDetailScreen(tribe: Tribe, viewModel: MyViewModel) {
     val eventos by viewModel.eventos.collectAsState()
     val context = LocalContext.current
     var showDialog by remember { mutableStateOf(false) }
+    val token = SessionManager(context).getToken()
 
+    val urlImagen = viewModel.obtenerUrlImagen(tribe.imagenUrl)
+
+    val imageLoader = remember {
+        viewModel.createAuthenticatedImageLoader(context, token.toString())
+    }
 
     LaunchedEffect(tribe.tribuId) {
         viewModel.getEventosPorTribu(context, tribe.tribuId)
@@ -266,7 +273,6 @@ fun TribeDetailScreen(tribe: Tribe, viewModel: MyViewModel) {
                     .background(Color.LightGray),
                 contentAlignment = Alignment.Center
             ) {
-                // AsyncImage(model = user.avatarUrl, contentDescription = null)
                 Text(
                     text = currentUser?.nombre?.firstOrNull()?.uppercase() ?: "",
                     color = Color.White,
@@ -330,7 +336,20 @@ fun TribeDetailScreen(tribe: Tribe, viewModel: MyViewModel) {
                         .height(180.dp)
                         .clip(RoundedCornerShape(16.dp))
                         .background(BlackPost)
-                )
+                ) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(context)
+                            .data(urlImagen)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = "Imagen de la tribu",
+                        imageLoader = imageLoader,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(20.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -338,7 +357,6 @@ fun TribeDetailScreen(tribe: Tribe, viewModel: MyViewModel) {
                 Text(
                     text = tribe.descripcion,
                     fontSize = 14.sp,
-                    maxLines = 4,
                     overflow = TextOverflow.Ellipsis,
                     color = BlackPost
                 )
@@ -388,7 +406,6 @@ fun TribeDetailScreen(tribe: Tribe, viewModel: MyViewModel) {
                     // Tablón de eventos
                     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         items(eventos) { evento ->
-                            Log.d("TribeDetailScreen", "Evento: $evento")
                             TribeEventDetails(evento = evento)
                         }
                     }
@@ -539,7 +556,13 @@ fun TribeDetailScreen(tribe: Tribe, viewModel: MyViewModel) {
                                 when {
                                     tribe.esPrivada -> {
                                         Button(
-                                            onClick = {Toast.makeText(context, "Esta tribu es privada", Toast.LENGTH_SHORT).show()},
+                                            onClick = {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Esta tribu es privada",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            },
                                             enabled = false,
                                             colors = ButtonDefaults.buttonColors(
                                                 containerColor = Color.Gray,
@@ -551,9 +574,16 @@ fun TribeDetailScreen(tribe: Tribe, viewModel: MyViewModel) {
                                             Text("Tribu privada")
                                         }
                                     }
+
                                     cupoLleno -> {
                                         Button(
-                                            onClick = {Toast.makeText(context, "Esta tribu está llena", Toast.LENGTH_SHORT).show()},
+                                            onClick = {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Esta tribu está llena",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            },
                                             enabled = false,
                                             colors = ButtonDefaults.buttonColors(
                                                 containerColor = Color.Gray,
@@ -565,6 +595,7 @@ fun TribeDetailScreen(tribe: Tribe, viewModel: MyViewModel) {
                                             Text("Tribu llena")
                                         }
                                     }
+
                                     else -> {
                                         UnirseTribuButton(
                                             context = context,
@@ -575,7 +606,7 @@ fun TribeDetailScreen(tribe: Tribe, viewModel: MyViewModel) {
                                         )
                                     }
                                 }
-                            }else if(tribe.autorId != user.usuarioId.toString()){
+                            } else if (tribe.autorId != user.usuarioId.toString()) {
                                 SalirDeTribuButton(
                                     context = context,
                                     viewModel = viewModel,
@@ -710,5 +741,7 @@ fun SalirDeTribuButton(
         Text(text = "Salir de la tribu")
     }
 }
+
+
 
 

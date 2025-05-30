@@ -49,7 +49,6 @@ fun HomeScreen(
     val currentUser by viewModel.currentUser.collectAsState()
 
     // Efecto que dispara la llamada al backend
-
     LaunchedEffect(reloadKey) {
         viewModel.loadCurrentUser(context)
         viewModel.getAllTribes(context)
@@ -71,7 +70,6 @@ fun HomeScreen(
                     .background(Color.LightGray),
                 contentAlignment = Alignment.Center
             ) {
-                // AsyncImage(model = user.avatarUrl, contentDescription = null)
                 Text(
                     text = currentUser?.nombre?.firstOrNull()?.uppercase() ?: "",
                     color = Color.White,

@@ -19,13 +19,18 @@ import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.robpalmol.tribeme.Components.TribeElement
+import com.robpalmol.tribeme.Components.TribeElementEvent
+import com.robpalmol.tribeme.DataBase.Models.EventoDTO
 import com.robpalmol.tribeme.DataBase.Models.Tribe
 import com.robpalmol.tribeme.ui.theme.BlackPost
 import com.robpalmol.tribeme.ui.theme.DifuminatedBackground
 
 @Composable
-fun MyDataScreen(viewModel: MyViewModel = viewModel(), onItemClick: (Tribe) -> Unit) {
+fun MyDataScreen(
+    viewModel: MyViewModel = viewModel(),
+    onItemClick: (Tribe) -> Unit,
+    onEventoClick: (EventoDTO) -> Unit
+) {
     val context = LocalContext.current
     val data by viewModel.tribeData.collectAsState()
     val error by viewModel.error.collectAsState()
@@ -51,7 +56,6 @@ fun MyDataScreen(viewModel: MyViewModel = viewModel(), onItemClick: (Tribe) -> U
                     .background(Color.LightGray),
                 contentAlignment = Alignment.Center
             ) {
-                // AsyncImage(model = user.avatarUrl, contentDescription = null)
                 Text(
                     text = currentUser?.nombre?.firstOrNull()?.uppercase() ?: "",
                     color = Color.White,
@@ -79,7 +83,12 @@ fun MyDataScreen(viewModel: MyViewModel = viewModel(), onItemClick: (Tribe) -> U
                 item { Spacer(modifier = Modifier.height(20.dp)) }
 
                 items(data) { tribe ->
-                    TribeElement(tribe = tribe, onClick = { onItemClick(tribe) }, context)
+                    TribeElementEvent(
+                        tribe = tribe,
+                        onClick = { onItemClick(tribe) },
+                        onClickEvento = { onEventoClick(it) },
+                        context,
+                    )
                 }
 
                 item { Spacer(modifier = Modifier.height(120.dp)) }
