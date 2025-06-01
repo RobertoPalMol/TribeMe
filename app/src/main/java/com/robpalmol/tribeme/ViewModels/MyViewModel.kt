@@ -45,9 +45,6 @@ class MyViewModel : ViewModel() {
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
 
-    private val _eventos = MutableStateFlow<List<EventoDTO>>(emptyList())
-    val eventos: MutableStateFlow<List<EventoDTO>> = _eventos
-
     private val _eventosPorTribu = mutableStateMapOf<Long, List<EventoDTO>>()
     val eventosPorTribu: SnapshotStateMap<Long, List<EventoDTO>> get() = _eventosPorTribu
 
@@ -68,32 +65,6 @@ class MyViewModel : ViewModel() {
         }
     }
 
-    fun getAllUsers(context: Context) {
-        viewModelScope.launch {
-            try {
-                val users = RetrofitInstance.getApiService(context).getAllUsers()
-                Log.d("MyViewModel", users.toString())
-                _users.value = users
-            } catch (e: Exception) {
-                _error.value = "No se pudo obtener los usuarios: ${e.localizedMessage}"
-                Log.d("MyViewModel", "Error al obtener los usuarios: $e")
-            }
-        }
-    }
-
-    fun getAllEvents(context: Context) {
-        viewModelScope.launch {
-            try {
-                val events = RetrofitInstance.getApiService(context).getAllEvents()
-                Log.d("MyViewModel", events.toString())
-                _eventos.value = events
-            } catch (e: Exception) {
-                _error.value = "No se pudo obtener los eventos: ${e.localizedMessage}"
-                Log.d("MyViewModel", "Error al obtener los eventos: $e")
-            }
-        }
-    }
-
     fun getMyTribes(context: Context) {
         viewModelScope.launch {
             try {
@@ -105,10 +76,6 @@ class MyViewModel : ViewModel() {
                 Log.d("MyViewModelt", "Error al obtener mis tribus: $e")
             }
         }
-    }
-
-    fun getUserById(userId: Long): User? {
-        return users.value.find { it.usuarioId == userId }
     }
 
     fun getTribeById(id: Long): Tribe? {
@@ -128,8 +95,6 @@ class MyViewModel : ViewModel() {
             }
         }
     }
-
-
 
     fun createTribe(
         context: Context,
@@ -167,6 +132,7 @@ class MyViewModel : ViewModel() {
             }
         }
     }
+
     fun loadCurrentUser(context: Context) {
         val token = SessionManager(context).getToken()
         if (!token.isNullOrEmpty()) {
@@ -194,7 +160,6 @@ class MyViewModel : ViewModel() {
             }
         }
     }
-
 
     fun crearEvento(context: Context, eventoDTO: CreateEventoDTO) {
         viewModelScope.launch {
@@ -289,6 +254,7 @@ class MyViewModel : ViewModel() {
             }
         }
     }
+
     fun eliminarTribu(tribuId: Long, onSuccess: () -> Unit, onError: (String) -> Unit, context: Context) {
         viewModelScope.launch {
             try {
