@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,6 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,6 +27,7 @@ import com.robpalmol.tribeme.DataBase.Models.EventoDTO
 import com.robpalmol.tribeme.DataBase.Models.Tribe
 import com.robpalmol.tribeme.ui.theme.BlackPost
 import com.robpalmol.tribeme.ui.theme.DifuminatedBackground
+
 
 @Composable
 fun MyDataScreen(
@@ -47,53 +51,73 @@ fun MyDataScreen(
             .background(BlackPost)
     ) {
         Spacer(modifier = Modifier.height(40.dp))
-        Row {
+
+        // Encabezado con avatar y nombre
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Spacer(modifier = Modifier.width(20.dp))
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(56.dp)
                     .clip(CircleShape)
-                    .background(Color.LightGray),
+                    .background(Color.DarkGray),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = currentUser?.nombre?.firstOrNull()?.uppercase() ?: "",
                     color = Color.White,
-                    fontSize = 20.sp,
+                    fontSize = 22.sp,
                     fontWeight = Bold
                 )
             }
-            Spacer(modifier = Modifier.width(20.dp))
+            Spacer(modifier = Modifier.width(16.dp))
             Text(
                 text = currentUser?.nombre ?: "Usuario",
                 color = Color.White,
-                fontSize = 32.sp
+                fontSize = 28.sp,
+                fontWeight = FontWeight.SemiBold
             )
         }
+
         Spacer(modifier = Modifier.height(20.dp))
+
         if (error != null) {
-            Text(text = "Error: $error", color = Color.Red)
+            Text(
+                text = "Error: $error",
+                color = Color.Red,
+                modifier = Modifier.padding(16.dp)
+            )
         } else {
-            LazyColumn(
+            // Contenedor visual con esquinas redondeadas y fondo degradado
+            Card(
                 modifier = Modifier
                     .fillMaxSize()
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(Brush.verticalGradient(DifuminatedBackground))
+                    .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)),
+                elevation = CardDefaults.cardElevation(8.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.Transparent)
             ) {
-                item { Spacer(modifier = Modifier.height(20.dp)) }
-
-                items(data) { tribe ->
-                    TribeElementEvent(
-                        tribe = tribe,
-                        onClick = { onItemClick(tribe) },
-                        onClickEvento = { onEventoClick(it) },
-                        context,
-                    )
+                Box(
+                    modifier = Modifier
+                        .background(Brush.verticalGradient(DifuminatedBackground))
+                        .fillMaxSize()
+                ) {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp),
+                        contentPadding = PaddingValues(top = 20.dp, bottom = 120.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        items(data) { tribe ->
+                            TribeElementEvent(
+                                tribe = tribe,
+                                onClick = { onItemClick(tribe) },
+                                onClickEvento = { onEventoClick(it) },
+                                context = context
+                            )
+                        }
+                    }
                 }
-
-                item { Spacer(modifier = Modifier.height(120.dp)) }
             }
         }
     }
 }
-

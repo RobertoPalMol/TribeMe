@@ -1,7 +1,6 @@
 package com.robpalmol.tribeme
 
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -28,7 +27,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,6 +49,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.robpalmol.tribeme.Components.EditTribe
 import com.robpalmol.tribeme.Components.EventExtended
+import com.robpalmol.tribeme.Components.EventsList
 import com.robpalmol.tribeme.Components.TribeDetailScreen
 import com.robpalmol.tribeme.Screens.CreateTribe
 import com.robpalmol.tribeme.Screens.HomeScreen
@@ -93,6 +95,7 @@ fun ComposeApp() {
         Route("Register", showInMenu = false, showMenu = false),
         Route("Editar/{tribeId}", showInMenu = false, showMenu = false),
         Route("event/{eventId}", showInMenu = false, showMenu = false),
+        Route("Eventos/{tribeId}", showInMenu = false, showMenu = false)
     )
 
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
@@ -160,28 +163,34 @@ fun ComposeApp() {
             }
             composable("event/{eventId}") { backStackEntry ->
                 val eventId = backStackEntry.arguments?.getString("eventId")?.toLongOrNull()
-                val viewModel: MyViewModel = viewModel()
-                val eventoSeleccionado by viewModel.eventoSeleccionado
+                val eventoSeleccionado by viewModel.eventoSeleccionado.collectAsState()
                 val context = LocalContext.current
 
-                if (eventId != null) {
+                var hasRequestedEvent by remember { mutableStateOf(false) }
 
-                    LaunchedEffect(eventId) {
+                LaunchedEffect(eventId) {
+                    if (eventId != null && !hasRequestedEvent) {
                         viewModel.getEventById(context = context, id = eventId)
+                        hasRequestedEvent = true
                     }
-                    if (eventoSeleccionado != null) {
-                        EventExtended(eventoSeleccionado!!, viewModel)
-                    } else {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
+                }
+
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    when {
+                        eventId == null -> {
+                            Text("ID de evento inválido", color = WhitePost)
+                        }
+
+                        eventoSeleccionado == null -> {
                             Text("Cargando Evento...", color = WhitePost)
                         }
-                    }
-                } else {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("ID de evento inválido")
+
+                        else -> {
+                            EventExtended(eventoSeleccionado!!, viewModel)
+                        }
                     }
                 }
             }
@@ -196,6 +205,15 @@ fun ComposeApp() {
                     Title = "Crear Tribu",
                     viewModel = viewModel
                 )
+            }
+            composable(route = "Eventos/{tribeId}") { backStackEntry ->
+                val tribeId = backStackEntry.arguments?.getString("tribeId")?.toLongOrNull()
+                val tribe = tribeId?.let { viewModel.getTribeById(it) }
+                if (tribe != null) {
+                    EventsList(viewModel, tribe)
+                } else {
+                    Text("Tribu no encontrada")
+                }
             }
             composable(route = "Editar/{tribeId}") { backStackEntry ->
                 val tribeId = backStackEntry.arguments?.getString("tribeId")?.toLongOrNull()

@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -233,82 +234,77 @@ fun TribeDescription(description: MutableState<String>) {
         }
     }
 }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MaxMembers(members: MutableState<Int>) {
     val expanded = remember { mutableStateOf(false) }
     val options = (1..25).toList()
 
-    Spacer(modifier = Modifier.height(30.dp))
+    Spacer(modifier = Modifier.height(24.dp))
 
-    Box(
-        modifier = Modifier.fillMaxWidth(),
-        contentAlignment = Alignment.Center
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color(0xFF1C1C1E))
+            .padding(16.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .background(BlackPost, shape = RoundedCornerShape(20.dp))
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+        Text(
+            text = "Número máximo de miembros",
+            style = TextStyle(fontSize = 16.sp, color = Color.White),
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        ExposedDropdownMenuBox(
+            expanded = expanded.value,
+            onExpandedChange = { expanded.value = !expanded.value }
         ) {
-            Text(
-                text = "Número Máximo de Miembros",
-                style = TextStyle(fontSize = 15.sp),
-                color = WhitePost
+            TextField(
+                readOnly = true,
+                value = members.value.toString(),
+                onValueChange = {},
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded.value)
+                },
+                colors = TextFieldDefaults.colors(
+                    focusedTextColor = BlackPost,
+                    unfocusedTextColor = BlackPost,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White
+                ),
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
             )
-            Spacer(modifier = Modifier.width(10.dp))
 
-            ExposedDropdownMenuBox(
+            ExposedDropdownMenu(
                 expanded = expanded.value,
-                onExpandedChange = { expanded.value = !expanded.value }
+                onDismissRequest = { expanded.value = false },
+                modifier = Modifier
+                    .background(Color.White, shape = RoundedCornerShape(12.dp))
+                    .heightIn(max = 250.dp)
             ) {
-                TextField(
-                    readOnly = true,
-                    value = members.value.toString(),
-                    onValueChange = {},
-                    trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded.value)
-                    },
-                    colors = TextFieldDefaults.colors(
-                        cursorColor = BlackPost,
-                        disabledLabelColor = BlackPost,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        focusedLabelColor = BlackPost,
-                        focusedContainerColor = WhitePost,
-                        unfocusedContainerColor = WhitePost,
-                        disabledContainerColor = WhitePost
-                    ),
-                    modifier = Modifier
-                        .menuAnchor()
-                        .widthIn(min = 60.dp)
-                )
-
-                ExposedDropdownMenu(
-                    expanded = expanded.value,
-                    onDismissRequest = { expanded.value = false },
-                    modifier = Modifier
-                        .height(200.dp)
-                        .width(150.dp)
-                        .background(WhitePost, shape = RoundedCornerShape(20.dp))
-                ) {
-                    options.forEach { selectionOption ->
-                        DropdownMenuItem(
-                            text = { Text(text = selectionOption.toString()) },
-                            onClick = {
-                                members.value = selectionOption
-                                expanded.value = false
-                            }
-                        )
-                    }
+                options.forEach { selectionOption ->
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = selectionOption.toString(),
+                                color = Color.Black
+                            )
+                        },
+                        onClick = {
+                            members.value = selectionOption
+                            expanded.value = false
+                        }
+                    )
                 }
             }
         }
     }
-
     Spacer(modifier = Modifier.height(10.dp))
 }
 

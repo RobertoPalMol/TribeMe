@@ -27,7 +27,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import com.robpalmol.tribeme.Components.AddPhoto
 import com.robpalmol.tribeme.Components.BooleanTribe
 import com.robpalmol.tribeme.Components.CategoriasCarrusel
@@ -43,8 +42,7 @@ import com.robpalmol.tribeme.ui.theme.DifuminatedBackground
 
 
 @SuppressLint("UnrememberedMutableState")
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
+@RequiresApi(Build.VERSION_CODES.O)@Composable
 fun CreateTribe(
     Title: String,
     viewModel: MyViewModel

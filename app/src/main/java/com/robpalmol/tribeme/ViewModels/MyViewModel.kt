@@ -39,6 +39,9 @@ class MyViewModel : ViewModel() {
     private val _currentUser = MutableStateFlow<User?>(null)
     val currentUser: StateFlow<User?> = _currentUser
 
+    private val _users = MutableStateFlow<List<User>>(emptyList())
+    val users: MutableStateFlow<List<User>>  = _users
+
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
 
@@ -48,8 +51,8 @@ class MyViewModel : ViewModel() {
     private val _eventosPorTribu = mutableStateMapOf<Long, List<EventoDTO>>()
     val eventosPorTribu: SnapshotStateMap<Long, List<EventoDTO>> get() = _eventosPorTribu
 
-    private val _eventoSeleccionado = mutableStateOf<EventoDTO?>(null)
-    val eventoSeleccionado: State<EventoDTO?> = _eventoSeleccionado
+    private val _eventoSeleccionado = MutableStateFlow<EventoDTO?>(null)
+    val eventoSeleccionado: StateFlow<EventoDTO?> = _eventoSeleccionado
 
 
     fun getAllTribes(context: Context) {
@@ -61,6 +64,19 @@ class MyViewModel : ViewModel() {
             } catch (e: Exception) {
                 _error.value = "No se pudo obtener las tribus: ${e.localizedMessage}"
                 Log.d("MyViewModel", "Error al obtener las tribus: $e")
+            }
+        }
+    }
+
+    fun getAllUsers(context: Context) {
+        viewModelScope.launch {
+            try {
+                val users = RetrofitInstance.getApiService(context).getAllUsers()
+                Log.d("MyViewModel", users.toString())
+                _users.value = users
+            } catch (e: Exception) {
+                _error.value = "No se pudo obtener los usuarios: ${e.localizedMessage}"
+                Log.d("MyViewModel", "Error al obtener los usuarios: $e")
             }
         }
     }
@@ -91,6 +107,9 @@ class MyViewModel : ViewModel() {
         }
     }
 
+    fun getUserById(userId: Long): User? {
+        return users.value.find { it.usuarioId == userId }
+    }
 
     fun getTribeById(id: Long): Tribe? {
         Log.d("ViewModel", "Buscando tribu con ID: $id en lista: ${tribeData.value.map { it.tribuId }}")
@@ -102,8 +121,10 @@ class MyViewModel : ViewModel() {
             try {
                 val evento = RetrofitInstance.getApiService(context).getEventById(id)
                 _eventoSeleccionado.value = evento
+                Log.d("MyViewModelEvent", "Eventos por id: $evento")
             } catch (e: Exception) {
-                _eventoSeleccionado.value = null
+                _error.value = "No se pudo obtener eventos por ID: ${e.localizedMessage}"
+                Log.d("MyViewModel", "Error al obtener eventos por id: $e")
             }
         }
     }
@@ -314,8 +335,6 @@ class MyViewModel : ViewModel() {
         }
     }
 
-
-
     private fun uriToFile(uri: Uri, context: Context): File? {
         val inputStream = context.contentResolver.openInputStream(uri)
         val tempFile = File.createTempFile("upload_", ".jpg", context.cacheDir)
@@ -353,28 +372,18 @@ class MyViewModel : ViewModel() {
     fun unirseAEvento(
         context: Context,
         eventoId: Long,
-        usuarioId: Long,
-        participantes: List<User>,
-        onError: (String) -> Unit
+        usuarioId: Long
     ) {
         viewModelScope.launch {
-            val yaInscrito = participantes.any { it.usuarioId == usuarioId }
-
-            if (yaInscrito) {
-                Toast.makeText(context, "Ya estás inscrito en este evento", Toast.LENGTH_SHORT).show()
-                return@launch
-            }
-
             try {
                 val response = RetrofitInstance.getApiService(context).unirseAEvento(eventoId, usuarioId)
 
                 if (response.isSuccessful) {
-                    Toast.makeText(context, "¡Te has unido al evento!", Toast.LENGTH_SHORT).show()
-                } else {
-                    onError("Error al unirse al evento: ${response.code()}")
+                    Toast.makeText(context, "Has entrado al evento", Toast.LENGTH_SHORT).show()
+                    getEventById(context, eventoId)
                 }
             } catch (e: Exception) {
-                onError("Error: ${e.localizedMessage}")
+
             }
         }
     }
@@ -382,8 +391,7 @@ class MyViewModel : ViewModel() {
     fun salirDeEvento(
         context: Context,
         eventoId: Long,
-        usuarioId: Long,
-        onError: (String) -> Unit
+        usuarioId: Long
     ) {
         viewModelScope.launch {
             try {
@@ -391,11 +399,10 @@ class MyViewModel : ViewModel() {
 
                 if (response.isSuccessful) {
                     Toast.makeText(context, "Has salido del evento", Toast.LENGTH_SHORT).show()
-                } else {
-                    onError("Error al salir del evento: ${response.code()}")
+                    getEventById(context, eventoId)
                 }
             } catch (e: Exception) {
-                onError("Error: ${e.localizedMessage}")
+
             }
         }
     }

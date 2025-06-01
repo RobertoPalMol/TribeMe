@@ -4,12 +4,14 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,17 +21,27 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -41,7 +53,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -50,13 +64,15 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.robpalmol.tribeme.DataBase.Models.Tribe
 import com.robpalmol.tribeme.DataBase.Models.TribuUpdateDTO
+import com.robpalmol.tribeme.DataBase.RetrofitInstance
 import com.robpalmol.tribeme.R
 import com.robpalmol.tribeme.ViewModels.MyViewModel
 import com.robpalmol.tribeme.ui.theme.BlackPost
 import com.robpalmol.tribeme.ui.theme.BluePost
 import com.robpalmol.tribeme.ui.theme.DifuminatedBackground
+import com.robpalmol.tribeme.ui.theme.RedPost
 import com.robpalmol.tribeme.ui.theme.WhitePost
-
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -67,71 +83,69 @@ fun YourPostElement(
 ) {
     var showDialog by remember { mutableStateOf(false) }
 
-    Column(
+    Card(
         modifier = Modifier
             .width(350.dp)
-            .clip(RoundedCornerShape(20.dp))
-            .background(WhitePost)
-            .padding(10.dp)
+            .padding(8.dp),
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(6.dp),
+        colors = CardDefaults.cardColors(containerColor = WhitePost)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = tribe.nombre,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp,
-                color = BlackPost
-            )
-            Text(
-                text = "@${tribe.autorNombre}",
-                fontSize = 14.sp,
-                color = BluePost
-            )
-        }
+        Column(modifier = Modifier.padding(16.dp)) {
 
-        Spacer(modifier = Modifier.height(10.dp))
-
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Button(
-                onClick = {
-                    navController.navigate("Editar/${tribe.tribuId}")
-                },
-                colors = ButtonDefaults.buttonColors(BluePost),
-                modifier = Modifier.height(40.dp)
+            // Cabecera
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    painter = painterResource(R.drawable.pen_edit_publication),
-                    contentDescription = "Editar Icon",
-                    modifier = Modifier.size(18.dp)
+                Text(
+                    text = tribe.nombre,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = BlackPost
                 )
-                Spacer(modifier = Modifier.width(5.dp))
-                Text(text = "Editar publicación", fontSize = 10.sp)
+                Text(
+                    text = "@${tribe.autorNombre}",
+                    fontSize = 14.sp,
+                    color = BluePost,
+                )
             }
 
-            Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            Button(
-                onClick = { showDialog = true },
-                colors = ButtonDefaults.buttonColors(BluePost),
-                modifier = Modifier.height(40.dp)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.bin_edit_publication),
-                    contentDescription = "Eliminar Icon",
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(5.dp))
-                Text(text = "Eliminar publicación", fontSize = 10.sp)
+            // Botones de acción
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+
+                ActionButton(
+                    text = "Editar publicación",
+                    icon = R.drawable.pen_edit_publication,
+                    color = BluePost
+                ) {
+                    navController.navigate("Editar/${tribe.tribuId}")
+                }
+
+                ActionButton(
+                    text = "Eliminar eventos",
+                    icon = R.drawable.bin_edit_publication,
+                    color = RedPost
+                ) {
+                    navController.navigate("Eventos/${tribe.tribuId}")
+                }
+
+                ActionButton(
+                    text = "Eliminar publicación",
+                    icon = R.drawable.bin_edit_publication,
+                    color = RedPost,
+                    height = 50.dp
+                ) {
+                    showDialog = true
+                }
             }
         }
     }
 
+    // Diálogo de confirmación
     if (showDialog) {
         Dialog(
             onDismissRequest = { showDialog = false },
@@ -146,6 +160,41 @@ fun YourPostElement(
         }
     }
 }
+
+
+@Composable
+fun ActionButton(
+    text: String,
+    icon: Int,
+    color: Color,
+    height: Dp = 44.dp,
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors(containerColor = color),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(height),
+        shape = RoundedCornerShape(12.dp),
+        contentPadding = PaddingValues(horizontal = 12.dp)
+    ) {
+        Icon(
+            painter = painterResource(icon),
+            contentDescription = null,
+            modifier = Modifier.size(20.dp),
+            tint = Color.White
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = text,
+            fontSize = 13.sp,
+            color = Color.White,
+            fontWeight = FontWeight.SemiBold
+        )
+    }
+}
+
 
 
 @Preview
@@ -228,7 +277,8 @@ fun DeletePopup(
                         viewModel.eliminarTribu(
                             tribuId = tribuId,
                             onSuccess = {
-                                Toast.makeText(context, "Tribu eliminada", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Tribu eliminada", Toast.LENGTH_SHORT)
+                                    .show()
                                 navController.navigate("Inicio")
                             },
                             onError = { errorMsg ->
@@ -254,11 +304,10 @@ fun DeletePopup(
 }
 
 
-
 @Composable
 fun CloseSesion(
     navController: NavController,
-){
+) {
     Button(
         onClick = {
             navController.navigate("Login") {
@@ -268,7 +317,9 @@ fun CloseSesion(
             }
         },
         colors = ButtonDefaults.buttonColors(BluePost),
-        modifier = Modifier.width(200.dp).height(50.dp)
+        modifier = Modifier
+            .width(200.dp)
+            .height(50.dp)
     ) {
         Text(
             text = "Cerrar sesión",
@@ -349,7 +400,11 @@ fun EditTribe(
             }
 
             item { BooleanTribe("Tribu privada", private1) }
-            item { BooleanTribe("Los miembros podrán crear eventos", remember { mutableStateOf(true) }) }
+            item {
+                BooleanTribe(
+                    "Los miembros podrán crear eventos",
+                    remember { mutableStateOf(true) })
+            }
 
             item {
                 UpdateElement(
@@ -389,7 +444,11 @@ fun UpdateElement(
     Button(
         onClick = {
             if (name.value.isBlank() || description.value.isBlank()) {
-                Toast.makeText(context, "Por favor completa todos los campos obligatorios", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    "Por favor completa todos los campos obligatorios",
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@Button
             }
 
@@ -435,5 +494,116 @@ fun UpdateElement(
             .padding(horizontal = 16.dp)
     ) {
         Text(text = "Guardar cambios")
+    }
+}
+
+
+@Composable
+fun EventsList(
+    viewModel: MyViewModel,
+    tribu: Tribe
+) {
+    val eventos = viewModel.eventosPorTribu[tribu.tribuId] ?: emptyList()
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val currentUser = viewModel.currentUser.collectAsState().value
+
+    LaunchedEffect(tribu.tribuId) {
+        viewModel.getEventosPorTribu(context, tribu.tribuId)
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BlackPost)
+    ) {
+        Spacer(modifier = Modifier.height(40.dp))
+
+        Row {
+            Spacer(modifier = Modifier.width(20.dp))
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(Color.LightGray),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = currentUser?.nombre?.firstOrNull()?.uppercase() ?: "",
+                    color = Color.White,
+                    fontSize = 20.sp,
+                    fontWeight = Bold
+                )
+            }
+            Spacer(modifier = Modifier.width(20.dp))
+            Text(
+                text = currentUser?.nombre ?: "Bienvenido",
+                color = Color.White,
+                fontSize = 32.sp
+            )
+        }
+        Spacer(modifier = Modifier.height(40.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(RoundedCornerShape(20.dp))
+                .background(Brush.verticalGradient(DifuminatedBackground))
+        ) {
+            Spacer(modifier = Modifier.height(20.dp))
+            Text(
+                text = "Eventos de ${tribu.nombre}",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(16.dp)
+            )
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
+                items(eventos) { evento ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        elevation = CardDefaults.cardElevation(4.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = evento.nombre,
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.weight(1f)
+                            )
+                            IconButton(onClick = {
+                                scope.launch {
+                                    try {
+                                        val response = RetrofitInstance.getApiService(context)
+                                            .deleteEvent(evento.eventoId)
+                                        if (response.isSuccessful) {
+                                            viewModel.getEventosPorTribu(context, tribu.tribuId)
+                                        } else {
+                                            Log.e("EliminarEvento", "Fallo: ${response.code()}")
+                                        }
+                                    } catch (e: Exception) {
+                                        Log.e("EliminarEvento", "Error", e)
+                                    }
+                                }
+                            }) {
+                                Icon(
+                                    painter = painterResource(R.drawable.bin_edit_publication),
+                                    contentDescription = "Eliminar Icon",
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

@@ -102,4 +102,7 @@ interface ApiService {
         @Part image: MultipartBody.Part
     ): Response<ImageUploadResponse>
 
+    @DELETE("api/eventos/{id}")
+    suspend fun deleteEvent(@Path("id") eventoId: Long): Response<Void>
+
 }

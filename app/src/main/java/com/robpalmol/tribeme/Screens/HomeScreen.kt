@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,27 +62,28 @@ fun HomeScreen(
             .background(BlackPost)
     ) {
         Spacer(modifier = Modifier.height(40.dp))
-        Row {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Spacer(modifier = Modifier.width(20.dp))
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(56.dp)
                     .clip(CircleShape)
-                    .background(Color.LightGray),
+                    .background(Color.DarkGray),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = currentUser?.nombre?.firstOrNull()?.uppercase() ?: "",
                     color = Color.White,
-                    fontSize = 20.sp,
+                    fontSize = 22.sp,
                     fontWeight = Bold
                 )
             }
-            Spacer(modifier = Modifier.width(20.dp))
+            Spacer(modifier = Modifier.width(16.dp))
             Text(
-                text = currentUser?.nombre ?: "Bienvenido",
+                text = currentUser?.nombre ?: "Usuario",
                 color = Color.White,
-                fontSize = 32.sp
+                fontSize = 28.sp,
+                fontWeight = FontWeight.SemiBold
             )
         }
         Spacer(modifier = Modifier.height(20.dp))
@@ -95,7 +97,7 @@ fun HomeScreen(
             item { Spacer(modifier = Modifier.height(20.dp)) }
 
             items(tribeList) { tribe ->
-                TribeElement(tribe = tribe, onClick = { onItemClick(tribe) }, context)
+                TribeElement(tribe = tribe, onClick = { onItemClick(tribe) })
             }
 
             item { Spacer(modifier = Modifier.height(120.dp)) }

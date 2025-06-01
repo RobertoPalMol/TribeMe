@@ -59,10 +59,7 @@ data class EventoDTO(
     val descripcion: String,
     val hora: String,
     val lugar: String,
-    val fechaCreacion: String,
-    val fechaModificacion: String,
-    val creadorId: String,
-    val miembros: List<User>
+    val miembrosEvento: List<User>,
 )
 
 data class CreateEventoDTO(

@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -71,29 +72,24 @@ import com.robpalmol.tribeme.ui.theme.PinkPost
 import com.robpalmol.tribeme.ui.theme.WhitePost
 import com.robpalmol.tribeme.util.SessionManager
 
-
 @Composable
 fun TribeElement(
     tribe: Tribe,
     onClick: () -> Unit,
-    context: Context
 ) {
-
     val viewModel: MyViewModel = viewModel()
-    val token = SessionManager(context).getToken()
-    val context = LocalContext.current
+    val localContext = LocalContext.current
+    val token = SessionManager(localContext).getToken()
 
     val urlImagen = viewModel.obtenerUrlImagen(tribe.imagenUrl)
-
     val imageLoader = remember {
-        viewModel.createAuthenticatedImageLoader(context, token.toString())
+        viewModel.createAuthenticatedImageLoader(localContext, token.toString())
     }
-
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(320.dp)
+            .height(340.dp)
             .padding(10.dp)
             .background(WhitePost, shape = RoundedCornerShape(20.dp))
             .clickable { onClick() }
@@ -105,10 +101,11 @@ fun TribeElement(
         ) {
             Spacer(modifier = Modifier.width(25.dp))
 
+            // Nombre de la tribu y autor
             Box(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    tribe.nombre,
-                    style = TextStyle(fontWeight = Bold),
+                    text = tribe.nombre,
+                    style = TextStyle(fontWeight = FontWeight.Bold),
                     fontSize = 24.sp
                 )
                 Text(
@@ -118,19 +115,22 @@ fun TribeElement(
                     fontSize = 24.sp
                 )
             }
+
             Text(
                 text = tribe.ubicacion,
                 color = BlackPost,
-                fontSize = 16.sp
+                fontSize = 16.sp,
+                modifier = Modifier.padding(top = 4.dp, bottom = 8.dp)
             )
+
             Box(modifier = Modifier.fillMaxWidth()) {
                 Row(modifier = Modifier.fillMaxWidth()) {
+                    // Imagen de la tribu
                     Column(
                         modifier = Modifier
                             .weight(1f)
                             .padding(8.dp)
                     ) {
-                        Spacer(modifier = Modifier.weight(1f))
                         Box(
                             Modifier
                                 .fillMaxWidth()
@@ -139,7 +139,7 @@ fun TribeElement(
                                 .padding(10.dp)
                         ) {
                             AsyncImage(
-                                model = ImageRequest.Builder(context)
+                                model = ImageRequest.Builder(localContext)
                                     .data(urlImagen)
                                     .crossfade(true)
                                     .build(),
@@ -150,39 +150,32 @@ fun TribeElement(
                                     .clip(RoundedCornerShape(20.dp)),
                                 contentScale = ContentScale.Crop
                             )
-                            Log.d("TribeElement", "Tribu: $urlImagen")
-
-                            Log.d("TribeElement", "Imagen URL: $urlImagen")
-                            Log.d("TribeElement", "Imagen URL original: ${tribe.imagenUrl}")
                         }
                     }
 
+                    // Descripción, participantes y categorías
                     Column(
                         modifier = Modifier
                             .weight(1f)
                             .padding(8.dp)
                     ) {
-                        Spacer(modifier = Modifier.weight(0.7f))
-
-                        Text("Descripción:", style = TextStyle(fontWeight = Bold))
+                        Text("Descripción:", style = TextStyle(fontWeight = FontWeight.Bold))
                         Text(
                             text = tribe.descripcion,
                             maxLines = 5,
-                            overflow = TextOverflow.Ellipsis
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(bottom = 8.dp)
                         )
-
-                        Spacer(modifier = Modifier.weight(1f))
 
                         Text(text = "Participantes: ${tribe.miembros.size}/${tribe.numeroMaximoMiembros}")
 
-                        Spacer(modifier = Modifier.weight(1f))
+                        Spacer(modifier = Modifier.height(8.dp))
 
                         Text(
                             text = "Categorías:",
-                            style = TextStyle(fontWeight = Bold)
+                            style = TextStyle(fontWeight = FontWeight.Bold),
+                            modifier = Modifier.padding(bottom = 4.dp)
                         )
-
-                        Spacer(modifier = Modifier.weight(0.5f))
 
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             items(tribe.categorias) { category ->
@@ -195,6 +188,7 @@ fun TribeElement(
         }
     }
 }
+
 
 
 @Composable
@@ -241,7 +235,7 @@ fun PostCategory(category: String) {
 @Composable
 fun TribeDetailScreen(tribe: Tribe, viewModel: MyViewModel) {
     val currentUser by viewModel.currentUser.collectAsState()
-    val eventos by viewModel.eventos.collectAsState()
+    val eventos = viewModel.eventosPorTribu[tribe.tribuId] ?: emptyList()
     val context = LocalContext.current
     var showDialog by remember { mutableStateOf(false) }
     val token = SessionManager(context).getToken()
@@ -264,27 +258,28 @@ fun TribeDetailScreen(tribe: Tribe, viewModel: MyViewModel) {
     ) {
         Spacer(modifier = Modifier.height(40.dp))
 
-        Row {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Spacer(modifier = Modifier.width(20.dp))
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(56.dp)
                     .clip(CircleShape)
-                    .background(Color.LightGray),
+                    .background(Color.DarkGray),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = currentUser?.nombre?.firstOrNull()?.uppercase() ?: "",
                     color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = Bold
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold
                 )
             }
-            Spacer(modifier = Modifier.width(20.dp))
+            Spacer(modifier = Modifier.width(16.dp))
             Text(
-                text = currentUser?.nombre ?: "Bienvenido",
+                text = currentUser?.nombre ?: "Usuario",
                 color = Color.White,
-                fontSize = 32.sp
+                fontSize = 28.sp,
+                fontWeight = FontWeight.SemiBold
             )
         }
 
@@ -400,15 +395,22 @@ fun TribeDetailScreen(tribe: Tribe, viewModel: MyViewModel) {
                         modifier = Modifier
                             .background(PinkPost, shape = RoundedCornerShape(8.dp))
                     ) {
-                        Text(text = "Eventos programados:", fontWeight = Bold, color = BlackPost)
+                        Text(text = "Eventos programados:", fontWeight = Bold, color = BlackPost, modifier = Modifier.padding(5.dp))
                     }
 
+                    Spacer(modifier = Modifier.height(8.dp))
+
                     // Tablón de eventos
-                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp)
+                    ) {
                         items(eventos) { evento ->
                             TribeEventDetails(evento = evento)
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     val puedeCrearEvento = remember(tribe, currentUser) {
                         tribe.crearEventos && tribe.miembros.any { it.usuarioId == currentUser?.usuarioId } ||
