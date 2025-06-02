@@ -27,17 +27,8 @@ interface ApiService {
     @POST("api/auth/signup")
     suspend fun registerUser(@Body user: User): AuthResponse
 
-    @GET("api/usuarios")
-    suspend fun getAllUsers(): List<User>
-
-    @GET("api/usuarios/{id}")
-    suspend fun getUserById(@Path("id") id: Long): User
-
     @GET("api/tribus")
     suspend fun getAllTribes(): List<Tribe>
-
-    @GET("api/eventos")
-    suspend fun getAllEvents(): List<EventoDTO>
 
     @GET("api/eventos/{id}")
     suspend fun getEventById(@Path("id") id: Long): EventoDTO

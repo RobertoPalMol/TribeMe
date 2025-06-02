@@ -1,6 +1,7 @@
 package com.robpalmol.tribeme.Screens
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -53,6 +54,7 @@ fun HomeScreen(
     LaunchedEffect(reloadKey) {
         viewModel.loadCurrentUser(context)
         viewModel.getAllTribes(context)
+        Log.d("HomeScreen", "currentUser: $currentUser")
     }
 
 

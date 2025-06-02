@@ -83,8 +83,6 @@ fun TribeElementEvent(
 
     var showEvents by remember { mutableStateOf(false) }
     val eventosDeLaTribu = viewModel.eventosPorTribu[tribe.tribuId] ?: emptyList()
-
-
     LaunchedEffect(tribe.tribuId) {
         viewModel.getEventosPorTribu(context, tribe.tribuId)
     }

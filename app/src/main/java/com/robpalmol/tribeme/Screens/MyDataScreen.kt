@@ -45,6 +45,8 @@ fun MyDataScreen(
         viewModel.getMyTribes(context)
     }
 
+
+
     Column(
         modifier = Modifier
             .fillMaxSize()

@@ -162,7 +162,7 @@ fun TribeElement(
                         Text("Descripción:", style = TextStyle(fontWeight = FontWeight.Bold))
                         Text(
                             text = tribe.descripcion,
-                            maxLines = 5,
+                            maxLines = 4,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
