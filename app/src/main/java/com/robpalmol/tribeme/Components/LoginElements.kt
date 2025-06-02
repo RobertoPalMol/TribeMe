@@ -190,10 +190,14 @@ fun UserMailName(mailname: MutableState<String>) {
 
 @Composable
 fun UserMailDirection(mail: MutableState<String>) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center
+    val emailRegex = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$")
+    val isEmailValid = remember(mail.value) {
+        emailRegex.matches(mail.value)
+    }
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth()
     ) {
         Box(
             modifier = Modifier
@@ -201,35 +205,43 @@ fun UserMailDirection(mail: MutableState<String>) {
                 .padding(8.dp)
                 .size(300.dp, 60.dp)
         ) {
-            Row {
-                TextField(
-                    value = mail.value,
-                    onValueChange = { mail.value = it },
-                    label = {
-                        Text(
-                            "Dirección de correo electrónico",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    textStyle = TextStyle(BlackPost),
-                    colors = TextFieldDefaults.colors(
-                        cursorColor = BlackPost,
-                        disabledLabelColor = BlackPost,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        focusedLabelColor = BlackPost,
-                        focusedContainerColor = WhitePost,
-                        unfocusedContainerColor = WhitePost,
-                        disabledContainerColor = WhitePost
+            TextField(
+                value = mail.value,
+                onValueChange = { mail.value = it },
+                label = {
+                    Text(
+                        "Dirección de correo electrónico",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold
                     )
-
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                textStyle = TextStyle(BlackPost),
+                isError = !isEmailValid && mail.value.isNotBlank(),
+                colors = TextFieldDefaults.colors(
+                    cursorColor = BlackPost,
+                    disabledLabelColor = BlackPost,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    focusedLabelColor = BlackPost,
+                    focusedContainerColor = WhitePost,
+                    unfocusedContainerColor = WhitePost,
+                    disabledContainerColor = WhitePost,
+                    errorContainerColor = WhitePost
                 )
-            }
+            )
+        }
+        if (!isEmailValid && mail.value.isNotBlank()) {
+            Text(
+                text = "Correo inválido. Usa el formato ejemplo@correo.com",
+                color = Color.Red,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(top = 4.dp)
+            )
         }
     }
 }
+
 
 @Composable
 fun UserName(name: MutableState<String>) {

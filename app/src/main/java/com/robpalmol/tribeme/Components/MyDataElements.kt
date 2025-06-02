@@ -371,7 +371,10 @@ fun EventExtended(evento: EventoDTO, viewModel: MyViewModel) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(GrayCategory.copy(alpha = 0.5f), shape = RoundedCornerShape(12.dp))
+                        .background(
+                            GrayCategory.copy(alpha = 0.5f),
+                            shape = RoundedCornerShape(12.dp)
+                        )
                         .padding(12.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {

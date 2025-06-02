@@ -26,10 +26,14 @@ object RetrofitInstance {
     //const val BASE_URL = "https://tribemebackend-production.up.railway.app"
 
     //aws vm
-    //const val BASE_URL ="http://56.228.33.92:8081"
+    const val BASE_URL ="http://51.20.114.99:8081"
 
     //local ngrok
-    const val  BASE_URL = "https://0c1c-148-56-147-9.ngrok-free.app"
+    //const val  BASE_URL = "https://yeti-immense-merely.ngrok-free.app/"
+
+    //pagekite
+    //const val BASE_URL ="http://tribeme.pagekite.me"
+
 
     // Inicializar Retrofit con el Contexto disponible
     fun getRetrofitInstance(context: Context): Retrofit {

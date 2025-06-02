@@ -42,7 +42,7 @@ interface ApiService {
     @GET("api/eventos/{id}")
     suspend fun getEventById(@Path("id") id: Long): EventoDTO
 
-    @GET("api/tribus/mistribus")
+    @GET("api/mis")
     suspend fun getMyTribes(): List<Tribe>
 
     @POST("api/tribus")
