@@ -11,7 +11,7 @@ object RetrofitInstance {
     // Backend URLs
 
     //Local
-    const val BASE_URL = "http://192.168.0.17:8081"
+    //const val BASE_URL = "http://192.168.0.17:8081"
 
     //render
      //const val BASE_URL = "https://tribeme-backend.onrender.com"
@@ -26,7 +26,7 @@ object RetrofitInstance {
     //const val BASE_URL = "https://tribemebackend-production.up.railway.app"
 
     //aws vm
-    //const val BASE_URL ="http://51.20.114.99:8081"
+    const val BASE_URL ="http://51.20.114.99:8081"
 
     //local ngrok
     //const val  BASE_URL = "https://yeti-immense-merely.ngrok-free.app/"
